@@ -19,6 +19,7 @@ class MainActivity : ComponentActivity() {
                 Surface {
                     val sharedViewModel: SharedViewModel = viewModel()
                     BehsazNavHost(sharedViewModel)
+                    //test for mammad branch
                 }
             }
         }
