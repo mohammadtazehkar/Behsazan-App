@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -14,7 +15,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.material3.DrawerValue
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.Scaffold
@@ -27,11 +27,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import com.example.behsaz.R
 import com.example.behsaz.data.models.home.CategoryListData
-import com.example.behsaz.data.models.home.SlideListData
 import com.example.behsaz.presentation.events.HomeEvent
 import com.example.behsaz.presentation.viewmodels.HomeViewModel
 import com.example.behsaz.ui.components.AppBannerPager
@@ -39,6 +38,7 @@ import com.example.behsaz.ui.components.AppDrawer
 import com.example.behsaz.ui.components.AppTopAppBar
 import com.example.behsaz.ui.components.CardColumnMediumCorner
 import com.example.behsaz.ui.components.EmptyView
+import com.example.behsaz.ui.components.ProgressBarDialog
 import com.example.behsaz.ui.components.TextTitleMedium
 import com.example.behsaz.utils.Destinations
 import com.example.behsaz.utils.Resource
@@ -47,10 +47,9 @@ import com.example.behsaz.utils.UIText
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomeScreen2(
-    homeViewModel: HomeViewModel = viewModel(),
+fun HomeScreen(
+    homeViewModel: HomeViewModel = hiltViewModel(),
     onNavigateToAddService: (Int, String) -> Unit,
     onDrawerItemClick: (String) -> Unit
 ) {
@@ -72,6 +71,13 @@ fun HomeScreen2(
             onConfirmation = {
                 homeViewModel.onEvent(HomeEvent.UpdateLogoutDialog)
                 /*TODO doLogout*/
+            }
+        )
+    }
+    if (homeState.isLoading) {
+        ProgressBarDialog(
+            onDismissRequest = {
+                homeViewModel.onEvent(HomeEvent.UpdateLoading(false))
             }
         )
     }
@@ -112,13 +118,16 @@ fun HomeScreen2(
     when (homeState.response) {
         is Resource.Loading -> {
             // Display loading UI
+            homeViewModel.onEvent(HomeEvent.UpdateLoading(true))
         }
         is Resource.Success -> {
             // Display success UI with data
+            homeViewModel.onEvent(HomeEvent.UpdateLoading(false))
             homeViewModel.onEvent(HomeEvent.PrepareData)
         }
         is Resource.Error -> {
             // Display error UI with message
+            homeViewModel.onEvent(HomeEvent.UpdateLoading(false))
         }
     }
 
@@ -127,7 +136,8 @@ fun HomeScreen2(
 @Composable
 fun HomeContent(
     modifier: Modifier = Modifier,
-    imageList : List<SlideListData>,
+//    imageList : List<SlideListData>,
+    imageList : List<String>,
     categoryList: List<CategoryListData>,
     onServiceItemClick: (CategoryListData) -> Unit,
     onDrawerOpen: () -> Unit
@@ -160,7 +170,12 @@ fun HomeContent(
                 )
             }
             else{
-                EmptyView(text = stringResource(id = R.string.empty_category_list))
+                Column (
+                    modifier = Modifier.fillMaxHeight(),
+                    verticalArrangement = Arrangement.Center
+                ) {
+                    EmptyView(text = stringResource(id = R.string.empty_category_list))
+                }
             }
         }
     }
@@ -211,5 +226,3 @@ fun HomeServiceGroupGridItem(
         )
     }
 }
-
-//data class GroupGridItemData(val id: Int, val title: UIText, val imageResourceId: Int)

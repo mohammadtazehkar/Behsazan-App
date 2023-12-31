@@ -31,8 +31,8 @@ import kotlinx.coroutines.launch
 import java.lang.IllegalArgumentException
 import javax.inject.Inject
 
-//@HiltViewModel
-class AddAddressViewModel(
+@HiltViewModel
+class AddAddressViewModel @Inject constructor(
     private val addMyAddressUseCase: AddMyAddressUseCase,
     private val updateMyAddressUseCase: UpdateMyAddressUseCase,
     private val savedStateHandle: SavedStateHandle,
@@ -185,21 +185,21 @@ class AddAddressViewModel(
     }
 }
 
-class AddAddressViewModelFactory(
-    private val addMyAddressUseCase: AddMyAddressUseCase,
-    private val updateMyAddressUseCase: UpdateMyAddressUseCase,
-    private val state: SavedStateHandle,
-//    private val item : MyAddressListData,
-) : ViewModelProvider.Factory {
-
-    override fun <T : ViewModel> create(modelClass: Class<T>): T {
-        if (modelClass.isAssignableFrom(AddAddressViewModel::class.java)){
-//            return AddAddressViewModel(addMyAddressUseCase, updateMyAddressUseCase, item) as T
-            return AddAddressViewModel(addMyAddressUseCase, updateMyAddressUseCase,state) as T
-        }
-        throw IllegalArgumentException("Unknown View Model Class")
-    }
-}
+//class AddAddressViewModelFactory(
+//    private val addMyAddressUseCase: AddMyAddressUseCase,
+//    private val updateMyAddressUseCase: UpdateMyAddressUseCase,
+//    private val state: SavedStateHandle,
+////    private val item : MyAddressListData,
+//) : ViewModelProvider.Factory {
+//
+//    override fun <T : ViewModel> create(modelClass: Class<T>): T {
+//        if (modelClass.isAssignableFrom(AddAddressViewModel::class.java)){
+////            return AddAddressViewModel(addMyAddressUseCase, updateMyAddressUseCase, item) as T
+//            return AddAddressViewModel(addMyAddressUseCase, updateMyAddressUseCase,state) as T
+//        }
+//        throw IllegalArgumentException("Unknown View Model Class")
+//    }
+//}
 
 //class AddAddressViewModelFactory @AssistedInject constructor(
 //    private val addMyAddressUseCase: AddMyAddressUseCase,

@@ -10,6 +10,7 @@ import com.example.behsaz.domain.repository.RulesRepository
 import com.example.behsaz.domain.repository.SignInRepository
 import com.example.behsaz.domain.repository.SignUpRepository
 import com.example.behsaz.domain.usecase.AddMyAddressUseCase
+import com.example.behsaz.domain.usecase.AddMyServiceUseCase
 import com.example.behsaz.domain.usecase.CheckUserExistUseCase
 import com.example.behsaz.domain.usecase.GetCategoryListUseCase
 import com.example.behsaz.domain.usecase.GetHomeDataUseCase
@@ -70,6 +71,14 @@ class UseCaseModule {
         myServiceListRepository: MyServiceListRepository
     ):GetMyServiceListUseCase{
         return GetMyServiceListUseCase(myServiceListRepository)
+    }
+
+    @Singleton
+    @Provides
+    fun provideAddMyServiceUseCase(
+        addMyServiceListRepository: MyServiceListRepository
+    ): AddMyServiceUseCase {
+        return AddMyServiceUseCase(addMyServiceListRepository)
     }
 
     @Singleton

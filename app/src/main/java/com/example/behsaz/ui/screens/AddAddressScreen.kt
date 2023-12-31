@@ -34,13 +34,13 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.behsaz.R
 import com.example.behsaz.data.models.myAddress.MyAddressListData
 import com.example.behsaz.presentation.events.AddAddressEvent
 import com.example.behsaz.presentation.events.SignInUIEvent
 import com.example.behsaz.presentation.viewmodels.AddAddressViewModel
-import com.example.behsaz.presentation.viewmodels.AddAddressViewModelFactory
 import com.example.behsaz.presentation.viewmodels.SharedViewModel
 import com.example.behsaz.ui.components.AppErrorSnackBar
 import com.example.behsaz.ui.components.AppTopAppBar
@@ -56,13 +56,12 @@ import com.example.behsaz.utils.Resource
 import dagger.hilt.android.internal.lifecycle.HiltViewModelFactory
 import kotlinx.coroutines.flow.collectLatest
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddAddressScreen(
     item: MyAddressListData,
     sharedViewModel: SharedViewModel,
 //    addAddressViewModel: AddAddressViewModel = viewModel(factory = AddAddressViewModelFactory(item,sharedViewModel)),
-    addAddressViewModel: AddAddressViewModel = viewModel(),
+    addAddressViewModel: AddAddressViewModel = hiltViewModel(),
 //    addAddressViewModel: AddAddressViewModel = viewModel(
 //        factory = HiltViewModelFactory(LocalContext.current, AddAddressViewModelFactory::class.java)
 //    ),

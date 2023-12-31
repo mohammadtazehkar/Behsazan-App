@@ -17,28 +17,19 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-//@HiltViewModel
-class HomeViewModel(private val getHomeDataUseCase: GetHomeDataUseCase): ViewModel() {
+@HiltViewModel
+class HomeViewModel @Inject constructor(private val getHomeDataUseCase: GetHomeDataUseCase) :
+    ViewModel() {
 
     private val _homeState = mutableStateOf(
         HomeState(
-            categoryListState =
-            mutableStateListOf(
-//                GroupGridItemData(1, UIText.StringResource(R.string.building_cleaning), R.drawable.cleaner),
-//                GroupGridItemData(2, UIText.StringResource(R.string.building_decoration), R.drawable.decor),
-//                GroupGridItemData(3, UIText.StringResource(R.string.building_wiring), R.drawable.lump),
-//                GroupGridItemData(4, UIText.StringResource(R.string.building_facilities), R.drawable.mechanic),
-//                GroupGridItemData(5, UIText.StringResource(R.string.computer_accessory), R.drawable.monitor),
-//                GroupGridItemData(6, UIText.StringResource(R.string.transportation), R.drawable.trucking)
-            ),
-            imageList = mutableStateListOf(
-//                "https://football360.ir/_next/image?url=https%3A%2F%2Fstatic.football360.ir%2Fnesta%2Fmedia%2Fposts_media%2Fsteptodown.com335363_5klMXi9.jpg&w=1920&q=75",
-//                "https://football360.ir/_next/image?url=https%3A%2F%2Fstatic.football360.ir%2Fnesta%2Fmedia%2Fposts_media%2Fphoto_2023-11-05_10-44-49.jpg&w=1920&q=75",
-//                "https://football360.ir/_next/image?url=https%3A%2F%2Fstatic.football360.ir%2Fnesta%2Fmedia%2Fposts_media%2F%25D8%25B1%25D8%25B6%25D8%25A7_%25D8%25AC%25D8%25B9%25D9%2581%25D8%25B1%25DB%258C.jpg&w=1920&q=75",
-//                "https://media.npr.org/assets/img/2021/08/11/gettyimages-1279899488_wide-f3860ceb0ef19643c335cb34df3fa1de166e2761-s1100-c50.jpg",
-//                "https://football360.ir/_next/image?url=https%3A%2F%2Fstatic.football360.ir%2Fnesta%2Fmedia%2Fposts_media%2F0_Arteta.png&w=1920&q=75",
-//                "https://football360.ir/_next/image?url=https%3A%2F%2Fstatic.football360.ir%2Fnesta%2Fmedia%2Fposts_media%2FIMG_9451.jpg&w=1920&q=75",
-//                "https://football360.ir/_next/image?url=https%3A%2F%2Fstatic.football360.ir%2Fnesta%2Fmedia%2Fposts_media%2FIMG_0155.JPEG&w=1920&q=75",
+            imageList = mutableListOf(
+                "https://img.freepik.com/free-psd/house-moving-service-banner-template_23-2148966110.jpg?w=1380&t=st=1704037972~exp=1704038572~hmac=d20ba2d1e20c11db75d1141d159975dc413da47f9d4913ae796059be26cf3a24",
+                "https://img.freepik.com/free-psd/cleaning-service-concept-landing-page-template_23-2148623576.jpg?w=1380&t=st=1704038752~exp=1704039352~hmac=03bccd2338e5c8cc6faea02f07ee299866f936819c501af04a342b1ee7e09dea",
+                "https://img.freepik.com/free-vector/flat-repair-shop-business-social-media-promo-template_23-2149534782.jpg?w=1380&t=st=1704038068~exp=1704038668~hmac=916128a6aac0696959245972dcd258490622583e9d64e10e91369b2a8df9f921",
+                "https://img.freepik.com/free-psd/electrical-services-banner-design_23-2148652456.jpg?w=1380&t=st=1704038172~exp=1704038772~hmac=88bc6d0f0992632104abf9da73d02959efb6032f670c1d0b63462456dd3e20c4",
+                "https://img.freepik.com/free-psd/professional-plumbers-job-banner-template_23-2148709811.jpg?w=1380&t=st=1704038299~exp=1704038899~hmac=d9382f277c9d2c1c57053d4f76c05e455c282db92d1bd3a4ad420f0eefff414e",
+                "https://img.freepik.com/free-vector/minimal-architecture-project-sale-banner_23-2149447727.jpg?w=1380&t=st=1704038426~exp=1704039026~hmac=6a1fd38e2d8a4ea2606495d2a9760559aa7bd029e2129d0a388b42dd55b69c00"
             ),
             logoutDialogVisible = false,
             response = Resource.Loading()
@@ -64,22 +55,20 @@ class HomeViewModel(private val getHomeDataUseCase: GetHomeDataUseCase): ViewMod
                     logoutDialogVisible = !homeState.value.logoutDialogVisible
                 )
             }
+
             is HomeEvent.PrepareData -> {
                 _homeState.value = homeState.value.copy(
                     categoryListState = homeState.value.response.data?.data?.categoryList!!,
-                    imageList = homeState.value.response.data?.data?.slideList!!
+//                    imageList = homeState.value.response.data?.data?.slideList!!
+                )
+            }
+
+            is HomeEvent.UpdateLoading -> {
+                _homeState.value = homeState.value.copy(
+                    isLoading = event.status
                 )
             }
         }
     }
 
-}
-
-class HomeViewModelFactory(private val getHomeDataUseCase: GetHomeDataUseCase) : ViewModelProvider.Factory {
-    override fun <T : ViewModel> create(modelClass: Class<T>): T {
-        if (modelClass.isAssignableFrom(HomeViewModel::class.java)){
-            return HomeViewModel(getHomeDataUseCase) as T
-        }
-        throw IllegalArgumentException("Unknown View Model Class")
-    }
 }

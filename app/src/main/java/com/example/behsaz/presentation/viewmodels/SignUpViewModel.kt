@@ -24,13 +24,13 @@ import kotlinx.coroutines.launch
 import java.lang.IllegalArgumentException
 import javax.inject.Inject
 
-//@HiltViewModel
-class SignUpViewModel(private val signUpUseCase: SignUpUseCase): ViewModel() {
+@HiltViewModel
+class SignUpViewModel @Inject constructor(private val signUpUseCase: SignUpUseCase): ViewModel() {
     private val _signUpState = mutableStateOf(
         SignUpState(
             personalTextFieldStates = mutableStateListOf("","","",""),
             userTextFieldStates = mutableStateListOf("","","",""),
-            response = Resource.Loading()
+            response = Resource.Error("")
         )
     )
     val signUpState: State<SignUpState> = _signUpState
@@ -56,9 +56,13 @@ class SignUpViewModel(private val signUpUseCase: SignUpUseCase): ViewModel() {
                     userTextFieldStates = newStateList
                 )
             }
-
             is SignUpEvent.SignUpClicked -> {
                 signUp(onSignUpCompleted = event.onSignUpCompleted)
+            }
+            is SignUpEvent.UpdateLoading -> {
+                _signUpState.value = signUpState.value.copy(
+                    isLoading = event.status
+                )
             }
         }
     }
@@ -166,7 +170,9 @@ class SignUpViewModel(private val signUpUseCase: SignUpUseCase): ViewModel() {
             }
         }
         else {
-            //TODO saveUserInfo and signUp
+            _signUpState.value = signUpState.value.copy(
+                response = Resource.Loading()
+            )
             viewModelScope.launch {
                 _signUpState.value = signUpState.value.copy(
                     response = signUpUseCase.execute(
@@ -194,14 +200,5 @@ class SignUpViewModel(private val signUpUseCase: SignUpUseCase): ViewModel() {
                 }
             }
         }
-    }
-}
-
-class SignUpViewModelFactory(private val signUpUseCase: SignUpUseCase) : ViewModelProvider.Factory {
-    override fun <T : ViewModel> create(modelClass: Class<T>): T {
-        if (modelClass.isAssignableFrom(SignUpViewModel::class.java)){
-            return SignUpViewModel(signUpUseCase) as T
-        }
-        throw IllegalArgumentException("Unknown View Model Class")
     }
 }

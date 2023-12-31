@@ -1,5 +1,6 @@
 package com.example.behsaz.presentation.viewmodels
 
+import android.util.Log
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
@@ -26,11 +27,3 @@ class SplashViewModel @Inject constructor(private val checkUserExistUseCase: Che
         _hasUserData.value = checkUserExistUseCase.execute()
     }
 }
-//class SplashViewModelFactory(private val checkUserExistUseCase: CheckUserExistUseCase) : ViewModelProvider.Factory {
-//    override fun <T : ViewModel> create(modelClass: Class<T>): T {
-//        if (modelClass.isAssignableFrom(SplashViewModel::class.java)){
-//            return SplashViewModel(checkUserExistUseCase) as T
-//        }
-//        throw IllegalArgumentException("Unknown View Model Class")
-//    }
-//}

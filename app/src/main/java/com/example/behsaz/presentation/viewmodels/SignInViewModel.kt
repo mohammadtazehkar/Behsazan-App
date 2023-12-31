@@ -35,14 +35,14 @@ import kotlinx.coroutines.launch
 import java.lang.IllegalArgumentException
 import javax.inject.Inject
 
-//@HiltViewModel
-class SignInViewModel (private val signInUseCase: SignInUseCase) : ViewModel() {
+@HiltViewModel
+class SignInViewModel @Inject constructor (private val signInUseCase: SignInUseCase) : ViewModel() {
     private val _signInState = mutableStateOf(
         SignInState(
             isBrandVisible = true,
             keyboardState = AppKeyboard.Closed,
             textFieldStates = mutableStateListOf("",""),
-            response = Resource.Loading()
+            response = Resource.Error("")
         )
     )
     val signInState: State<SignInState> = _signInState
@@ -58,13 +58,11 @@ class SignInViewModel (private val signInUseCase: SignInUseCase) : ViewModel() {
                     keyboardState = AppKeyboard.Opened
                 )
             }
-
             is SignInEvent.KeyboardClose -> {
                 _signInState.value = _signInState.value.copy(
                     keyboardState = AppKeyboard.Closed
                 )
             }
-
             is SignInEvent.UpdateTextFieldState -> {
                 val newStateList = _signInState.value.textFieldStates
                 newStateList[event.type] = event.newValue
@@ -72,9 +70,13 @@ class SignInViewModel (private val signInUseCase: SignInUseCase) : ViewModel() {
                     textFieldStates = newStateList
                 )
             }
-
             is SignInEvent.LoginClicked -> {
                 signIn(onSignInCompleted = event.onSignInCompleted)
+            }
+            is SignInEvent.UpdateLoading -> {
+                _signInState.value = signInState.value.copy(
+                    isLoading = event.status
+                )
             }
         }
     }
@@ -107,7 +109,9 @@ class SignInViewModel (private val signInUseCase: SignInUseCase) : ViewModel() {
             }
         }
         else {
-            //TODO getUserInfo and save and login
+            _signInState.value = signInState.value.copy(
+                response = Resource.Loading()
+            )
             viewModelScope.launch {
                 _signInState.value = signInState.value.copy(
                     response = signInUseCase.execute(signInState.value.textFieldStates[USERNAME],signInState.value.textFieldStates[PASSWORD])
@@ -125,39 +129,6 @@ class SignInViewModel (private val signInUseCase: SignInUseCase) : ViewModel() {
                     onSignInCompleted()
                 }
             }
-
-
-//            _signInState.value = signInState.value.copy(
-//                response = Resource.Loading()
-//            )
-//            try {
-//                viewModelScope.launch{
-//                    _signInState.value = signInState.value.copy(
-//                        response = signInUseCase.execute()
-//                    )
-////                    val result = signInUseCase.execute()
-////                    if (result.statusCode == SUCCESS){
-////
-////                    }else if (result.statusCode == INVALID_USERNAME){
-////
-////                    }
-//                }
-//            }catch (exception: Exception){
-//                _signInState.value = signInState.value.copy(
-//                    response = Resource.Error(exception.message.toString())
-//                )
-//            }
-
-//            onSignInCompleted()
         }
-    }
-}
-
-class SignInViewModelFactory(private val signInUseCase: SignInUseCase) : ViewModelProvider.Factory {
-    override fun <T : ViewModel> create(modelClass: Class<T>): T {
-        if (modelClass.isAssignableFrom(SignInViewModel::class.java)){
-            return SignInViewModel(signInUseCase) as T
-        }
-        throw IllegalArgumentException("Unknown View Model Class")
     }
 }

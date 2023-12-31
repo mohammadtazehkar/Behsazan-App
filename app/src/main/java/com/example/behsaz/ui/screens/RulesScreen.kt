@@ -11,6 +11,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.behsaz.R
 import com.example.behsaz.presentation.viewmodels.RulesViewModel
@@ -19,7 +20,7 @@ import com.example.behsaz.utils.Resource
 
 @Composable
 fun RulesScreen(
-    rulesViewModel : RulesViewModel = viewModel(),
+    rulesViewModel : RulesViewModel = hiltViewModel(),
     onNavUp: () -> Unit
 ){
     val rulesState = rulesViewModel.rulesState.value

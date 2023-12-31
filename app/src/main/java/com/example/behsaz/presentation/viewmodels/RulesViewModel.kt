@@ -19,8 +19,8 @@ import kotlinx.coroutines.launch
 import java.lang.IllegalArgumentException
 import javax.inject.Inject
 
-//@HiltViewModel
-class RulesViewModel(private val getRulesUseCase: GetRulesUseCase) : ViewModel() {
+@HiltViewModel
+class RulesViewModel @Inject constructor(private val getRulesUseCase: GetRulesUseCase) : ViewModel() {
 
 
     private val _rulesState = mutableStateOf(
@@ -47,11 +47,11 @@ class RulesViewModel(private val getRulesUseCase: GetRulesUseCase) : ViewModel()
 
 }
 
-class RulesViewModelFactory(private val getRulesUseCase: GetRulesUseCase) : ViewModelProvider.Factory {
-    override fun <T : ViewModel> create(modelClass: Class<T>): T {
-        if (modelClass.isAssignableFrom(RulesViewModel::class.java)){
-            return RulesViewModel(getRulesUseCase) as T
-        }
-        throw IllegalArgumentException("Unknown View Model Class")
-    }
-}
+//class RulesViewModelFactory(private val getRulesUseCase: GetRulesUseCase) : ViewModelProvider.Factory {
+//    override fun <T : ViewModel> create(modelClass: Class<T>): T {
+//        if (modelClass.isAssignableFrom(RulesViewModel::class.java)){
+//            return RulesViewModel(getRulesUseCase) as T
+//        }
+//        throw IllegalArgumentException("Unknown View Model Class")
+//    }
+//}

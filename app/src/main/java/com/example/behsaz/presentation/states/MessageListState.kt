@@ -6,6 +6,7 @@ import com.example.behsaz.utils.Resource
 
 
 data class MessageListState(
+    var isLoading: Boolean = true,
     var listState: List<MessageListData> = mutableListOf(),
     var response: Resource<APIMessageListResponse>
 )

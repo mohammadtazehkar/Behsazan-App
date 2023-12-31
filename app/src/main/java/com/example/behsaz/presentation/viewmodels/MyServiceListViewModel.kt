@@ -17,8 +17,8 @@ import kotlinx.coroutines.launch
 import java.lang.IllegalArgumentException
 import javax.inject.Inject
 
-//@HiltViewModel
-class MyServiceListViewModel(private val getMyServiceListUseCase: GetMyServiceListUseCase): ViewModel() {
+@HiltViewModel
+class MyServiceListViewModel @Inject constructor(private val getMyServiceListUseCase: GetMyServiceListUseCase): ViewModel() {
 
     private val _myServiceListState = mutableStateOf(
         MyServiceListState(
@@ -30,11 +30,6 @@ class MyServiceListViewModel(private val getMyServiceListUseCase: GetMyServiceLi
 
     init {
         getListFromServer()
-//        viewModelScope.launch {
-//            _myServiceListState.value = myServiceListState.value.copy(
-//                response = getMyServiceListUseCase.execute()
-//            )
-//        }
     }
 
     private val _uiEventFlow = MutableSharedFlow<SignInUIEvent>()
@@ -57,6 +52,9 @@ class MyServiceListViewModel(private val getMyServiceListUseCase: GetMyServiceLi
     }
 
     private fun getListFromServer(){
+        _myServiceListState.value = myServiceListState.value.copy(
+            response = Resource.Loading()
+        )
         viewModelScope.launch {
             _myServiceListState.value = myServiceListState.value.copy(
                 response = getMyServiceListUseCase.execute()
@@ -70,13 +68,4 @@ class MyServiceListViewModel(private val getMyServiceListUseCase: GetMyServiceLi
         )
     }
 
-}
-
-class MyServiceListViewModelFactory(private val getMyServiceListUseCase: GetMyServiceListUseCase) : ViewModelProvider.Factory {
-    override fun <T : ViewModel> create(modelClass: Class<T>): T {
-        if (modelClass.isAssignableFrom(MyServiceListViewModel::class.java)){
-            return MyServiceListViewModel(getMyServiceListUseCase) as T
-        }
-        throw IllegalArgumentException("Unknown View Model Class")
-    }
 }

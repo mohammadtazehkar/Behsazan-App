@@ -3,6 +3,7 @@ package com.example.behsaz.presentation.viewmodels
 import android.util.Log
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
@@ -15,6 +16,9 @@ import com.example.behsaz.utils.UIText
 import com.example.behsaz.presentation.events.AddServiceEvent
 import com.example.behsaz.presentation.events.SignInUIEvent
 import com.example.behsaz.presentation.states.AddServiceState
+import com.example.behsaz.utils.ArgumentKeys
+import com.example.behsaz.utils.ArgumentKeys.CATEGORY_ID
+import com.example.behsaz.utils.ArgumentKeys.CATEGORY_TITLE
 import com.example.behsaz.utils.JSonStatusCode
 import com.example.behsaz.utils.Resource
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -24,20 +28,23 @@ import kotlinx.coroutines.launch
 import java.lang.IllegalArgumentException
 import javax.inject.Inject
 
-//@HiltViewModel
-class AddServiceViewModel(
+@HiltViewModel
+class AddServiceViewModel @Inject constructor(
     private val addMyServiceUseCase: AddMyServiceUseCase,
     private val getMyAddressListUseCase: GetMyAddressListUseCase,
     private val getCategoryListUseCase: GetCategoryListUseCase,
-    categoryId: Int,
-    categoryTitle: String
+    private val savedStateHandle: SavedStateHandle,
+//    categoryId: Int,
+//    categoryTitle: String
 ) : ViewModel() {
 
     private val _addServiceState = mutableStateOf(
         AddServiceState(
-            categoryId = categoryId,
+//            categoryId = categoryId,
 //            categoryTitle = UIText.StringResource(resId = R.string.select_category),
-            categoryTitle = categoryTitle,
+//            categoryTitle = categoryTitle,
+            categoryId = savedStateHandle.get<Int>(CATEGORY_ID)!!,
+            categoryTitle = savedStateHandle.get<String>(CATEGORY_TITLE)!!,
             address = "",
             latitude = 0.00,
             longitude = 0.00,
@@ -432,16 +439,16 @@ class AddServiceViewModel(
 }
 
 
-class AddServiceViewModelFactory(
-    private val addMyServiceUseCase: AddMyServiceUseCase,
-    private val getMyAddressListUseCase: GetMyAddressListUseCase,
-    private val getCategoryListUseCase: GetCategoryListUseCase,
-    private val categoryId : Int,
-    private val categoryTitle : String) : ViewModelProvider.Factory {
-    override fun <T : ViewModel> create(modelClass: Class<T>): T {
-        if (modelClass.isAssignableFrom(AddServiceViewModel::class.java)){
-            return AddServiceViewModel(addMyServiceUseCase,getMyAddressListUseCase,getCategoryListUseCase,categoryId,categoryTitle) as T
-        }
-        throw IllegalArgumentException("Unknown View Model Class")
-    }
-}
+//class AddServiceViewModelFactory(
+//    private val addMyServiceUseCase: AddMyServiceUseCase,
+//    private val getMyAddressListUseCase: GetMyAddressListUseCase,
+//    private val getCategoryListUseCase: GetCategoryListUseCase,
+//    private val categoryId : Int,
+//    private val categoryTitle : String) : ViewModelProvider.Factory {
+//    override fun <T : ViewModel> create(modelClass: Class<T>): T {
+//        if (modelClass.isAssignableFrom(AddServiceViewModel::class.java)){
+//            return AddServiceViewModel(addMyServiceUseCase,getMyAddressListUseCase,getCategoryListUseCase,categoryId,categoryTitle) as T
+//        }
+//        throw IllegalArgumentException("Unknown View Model Class")
+//    }
+//}

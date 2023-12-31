@@ -45,7 +45,10 @@ object ArgumentKeys{
 //region ServerConstants
 object ServerConstants{
 //    const val BASE_URL = "http://panel.behsazanapp.ir/"
-    const val BASE_URL = "http://localhost:8585/"
+//    const val BASE_URL = "http://localhost:8585/"
+//    const val BASE_URL = "https://10.0.2.2:8585/"
+    const val BASE_URL = "http://behsazan.mohammadtazehkar.ir/"
+//    const val BASE_URL = "http://192.168.142.34:8585/"
     const val SUB_URL_REGISTER = "api/CustomerApp/AddCustomer"
     const val SUB_URL_LOGIN = "api/customerApp/login"
     const val SUB_URL_GROUPS_AND_MESSAGES = "api/CustomerApp/GetLastMessagesAndServiceGroups"

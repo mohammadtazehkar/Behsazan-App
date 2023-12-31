@@ -1,7 +1,6 @@
 package com.example.behsaz.ui.screens
 
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -13,7 +12,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.behsaz.R
 import com.example.behsaz.presentation.constants.SignUpInputTypes.EMAIL
 import com.example.behsaz.presentation.constants.SignUpInputTypes.FIRSTNAME
@@ -28,15 +27,15 @@ import com.example.behsaz.presentation.events.SignUpEvent
 import com.example.behsaz.presentation.viewmodels.SignUpViewModel
 import com.example.behsaz.ui.components.AppErrorSnackBar
 import com.example.behsaz.ui.components.AppTopAppBar
+import com.example.behsaz.ui.components.ProgressBarDialog
 import com.example.behsaz.ui.components.UserInfoContent
 import com.example.behsaz.ui.models.TextInputData
 import com.example.behsaz.utils.Resource
 import kotlinx.coroutines.flow.collectLatest
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SignUpScreen(
-    signUpViewModel: SignUpViewModel = viewModel(),
+    signUpViewModel: SignUpViewModel = hiltViewModel(),
     onSignUpSubmitted: () -> Unit,
     onNavUp: () -> Unit
 ) {
@@ -55,6 +54,14 @@ fun SignUpScreen(
             }
         }
     }
+    if (signUpState.isLoading) {
+        ProgressBarDialog(
+            onDismissRequest = {
+                signUpViewModel.onEvent(SignUpEvent.UpdateLoading(false))
+            }
+        )
+    }
+
     Scaffold(
         snackbarHost = {
             SnackbarHost(snackbarHostState) {
@@ -154,12 +161,15 @@ fun SignUpScreen(
     when (signUpState.response) {
         is Resource.Loading -> {
             // Display loading UI
+            signUpViewModel.onEvent(SignUpEvent.UpdateLoading(true))
         }
         is Resource.Success -> {
             // Display success UI with data
+            signUpViewModel.onEvent(SignUpEvent.UpdateLoading(false))
         }
         is Resource.Error -> {
             // Display error UI with message
+            signUpViewModel.onEvent(SignUpEvent.UpdateLoading(false))
         }
     }
 

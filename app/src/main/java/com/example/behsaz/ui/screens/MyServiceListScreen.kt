@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -19,6 +20,7 @@ import androidx.compose.material.pullrefresh.pullRefresh
 import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.material3.Divider
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -26,14 +28,17 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.behsaz.R
 import com.example.behsaz.data.models.myService.MyServiceListData
+import com.example.behsaz.presentation.events.HomeEvent
 import com.example.behsaz.presentation.events.MyServiceListEvent
 import com.example.behsaz.presentation.viewmodels.MyServiceListViewModel
 import com.example.behsaz.ui.components.AppTopAppBar
 import com.example.behsaz.ui.components.CardColumnMediumCorner
 import com.example.behsaz.ui.components.EmptyView
+import com.example.behsaz.ui.components.ProgressBarDialog
 import com.example.behsaz.ui.components.TextTitleMedium
 import com.example.behsaz.ui.components.TextTitleSmall
 import com.example.behsaz.utils.Resource
@@ -41,7 +46,7 @@ import com.example.behsaz.utils.Resource
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun MyServiceListScreen(
-    myServiceListViewModel: MyServiceListViewModel = viewModel(),
+    myServiceListViewModel: MyServiceListViewModel = hiltViewModel(),
     onServiceItemClick: () -> Unit,
     onNavUp: () -> Unit
 ) {
@@ -51,16 +56,31 @@ fun MyServiceListScreen(
         refreshing = myServiceListState.isLoading,
         onRefresh = {myServiceListViewModel.onEvent(MyServiceListEvent.GetListFromServer)}
     )
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(MaterialTheme.colorScheme.background)
-        ) {
+
+    if (myServiceListState.isLoading) {
+        ProgressBarDialog(
+            onDismissRequest = {
+                myServiceListViewModel.onEvent(MyServiceListEvent.UpdateLoading(false))
+            }
+        )
+    }
+
+    Scaffold(
+        topBar = {
             AppTopAppBar(
                 title = stringResource(id = R.string.my_services),
                 isBackVisible = true,
                 onBack = onNavUp
             )
+        }
+    ) {paddingValue ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(MaterialTheme.colorScheme.background)
+                .padding(paddingValue)
+        ) {
+
             Box(modifier = Modifier.pullRefresh(pullRefreshState)) {
                 PullRefreshIndicator(
                     refreshing = myServiceListState.isLoading,
@@ -89,13 +109,18 @@ fun MyServiceListScreen(
                             }
                         }
                     )
-                } else {
-                    EmptyView(text = stringResource(id = R.string.empty_service_list))
+                }
+                else {
+                    Column (
+                        modifier = Modifier.fillMaxHeight().padding(16.dp),
+                        verticalArrangement = Arrangement.Center
+                    ) {
+                        EmptyView(text = stringResource(id = R.string.empty_service_list))
+                    }
                 }
             }
         }
-
-
+    }
 
     when (myServiceListState.response) {
         is Resource.Loading -> {

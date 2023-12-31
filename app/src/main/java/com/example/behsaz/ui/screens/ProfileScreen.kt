@@ -1,5 +1,6 @@
 package com.example.behsaz.ui.screens
 
+import android.util.Log
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
@@ -13,6 +14,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.behsaz.R
 import com.example.behsaz.presentation.constants.SignUpInputTypes
@@ -23,15 +25,15 @@ import com.example.behsaz.presentation.events.SignUpEvent
 import com.example.behsaz.presentation.viewmodels.ProfileViewModel
 import com.example.behsaz.ui.components.AppErrorSnackBar
 import com.example.behsaz.ui.components.AppTopAppBar
+import com.example.behsaz.ui.components.ProgressBarDialog
 import com.example.behsaz.ui.components.UserInfoContent
 import com.example.behsaz.ui.models.TextInputData
 import com.example.behsaz.utils.Resource
 import kotlinx.coroutines.flow.collectLatest
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProfileScreen(
-    profileViewModel: ProfileViewModel = viewModel(),
+    profileViewModel: ProfileViewModel = hiltViewModel(),
     onEditSubmitted: () -> Unit,
     onNavUp: () -> Unit
 ) {
@@ -50,6 +52,13 @@ fun ProfileScreen(
                 }
             }
         }
+    }
+    if (profileState.isLoading) {
+        ProgressBarDialog(
+            onDismissRequest = {
+                profileViewModel.onEvent(ProfileEvent.UpdateLoading(false))
+            }
+        )
     }
 
     Scaffold(
@@ -162,13 +171,18 @@ fun ProfileScreen(
     when (profileState.getProfileResponse) {
         is Resource.Loading -> {
             // Display loading UI
+            profileViewModel.onEvent(ProfileEvent.UpdateLoading(true))
         }
         is Resource.Success -> {
             // Display success UI with data
-            profileViewModel.onEvent(ProfileEvent.SetRemoteProfileData)
+            profileViewModel.onEvent(ProfileEvent.UpdateLoading(false))
+            profileViewModel.onEvent(ProfileEvent.PrepareData)
         }
         is Resource.Error -> {
             // Display error UI with message
+            Log.i("mamali","error from profileScree ")
+
+            profileViewModel.onEvent(ProfileEvent.UpdateLoading(false))
         }
     }
 

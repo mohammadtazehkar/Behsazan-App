@@ -44,7 +44,8 @@ import com.example.behsaz.data.models.home.SlideListData
 @Composable
 fun AppBannerPager(
     modifier: Modifier = Modifier,
-    images : List<SlideListData>
+    images : List<String>
+//    images : List<SlideListData>
 ) {
     val pagerState = rememberPagerState(
         initialPage = 0,
@@ -63,7 +64,8 @@ fun AppBannerPager(
                 contentAlignment = Alignment.Center
             ) {
                 AsyncImage(
-                    model = images[pagerState.currentPage].imageUrl,
+//                    model = images[pagerState.currentPage].imageUrl,
+                    model = images[pagerState.currentPage],
                     contentDescription = "Translated description of what the image contains",
                     contentScale = ContentScale.Crop,
                     placeholder = painterResource(R.drawable.place_holder_gray)

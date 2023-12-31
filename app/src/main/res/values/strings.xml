@@ -119,7 +119,7 @@
     <string name="please_select_address_from_map">لطفا آدرس خود را بر روی نقشه مشخص نمایید.</string>
     <string name="empty_category">لطفا دسته بندی را انتخاب نمایید.</string>
     <string name="submit_address">تایید آدرس</string>
-    <string name="empty_message_list">متاسفانه در حال حاضر پیامی برای نمایش وجود ندارد!</string>
+    <string name="empty_message_list">متاسفانه در حال حاضر پیامی برای نمایش وجود ندارد</string>
     <string name="empty_address_list">متاسفانه در حال حاضر آدرسی برای نمایش وجود ندارد! برای ایجاد آدرس جدید گزینه + را از پایین صفحه انتخاب نمایید</string>
     <string name="empty_service_list">متاسفانه در حال حاضر سرویسی برای نمایش وجود ندارد</string>
     <string name="empty_category_list">متاسفانه در حال حاضر دسته بندی برای نمایش وجود ندارد</string>

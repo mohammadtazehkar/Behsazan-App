@@ -41,6 +41,7 @@ import com.example.behsaz.utils.ServerConstants.USERNAME
 import com.example.behsaz.utils.ServerConstants.USER_DESCRIPTION
 import retrofit2.Response
 import retrofit2.http.Field
+import retrofit2.http.FormUrlEncoded
 import retrofit2.http.GET
 import retrofit2.http.Header
 import retrofit2.http.POST
@@ -48,12 +49,14 @@ import retrofit2.http.Url
 
 interface APIService {
 
+    @FormUrlEncoded
     @POST(SUB_URL_LOGIN)
     suspend fun signIn(
         @Field(USERNAME) username: String,
         @Field(PASSWORD) password: String
     ): Response<APISignInResponse>
 
+    @FormUrlEncoded
     @POST(SUB_URL_REGISTER)
     suspend fun signUp(
         @Field(FIRST_NAME) firstName: String,
@@ -66,11 +69,13 @@ interface APIService {
         @Field(REAGENT_TOKEN) reagentToken: String
     ): Response<APISignUpResponse>
 
+//    @FormUrlEncoded
     @POST(SUB_URL_PROFILE)
     suspend fun profile(
         @Header(AUTHORIZATION) token: String,
     ): Response<APIProfileResponse>
 
+    @FormUrlEncoded
     @POST(SUB_URL_EDIT_PROFILE)
     suspend fun updateProfile(
         @Header(AUTHORIZATION) token: String,
@@ -93,6 +98,7 @@ interface APIService {
         @Header(AUTHORIZATION) token: String,
     ): Response<APIMyAddressListResponse>
 
+    @FormUrlEncoded
     @POST(SUB_URL_ADD_ADDRESS)
     suspend fun addAddress(
         @Header(AUTHORIZATION) token: String,
@@ -101,6 +107,7 @@ interface APIService {
         @Field(MAP_POINT) mapPoint: String
     ): Response<APIAddAddressResponse>
 
+    @FormUrlEncoded
     @POST(SUB_URL_EDIT_ADDRESS)
     suspend fun editAddress(
         @Header(AUTHORIZATION) token: String,
@@ -116,6 +123,7 @@ interface APIService {
     @GET(SUB_URL_GROUPS_AND_MESSAGES)
     suspend fun getHomeData():Response<APIHomeDataResponse>
 
+    @FormUrlEncoded
     @POST(SUB_URL_ADD_SERVICE)
     suspend fun addService(
         @Header(AUTHORIZATION) token: String,

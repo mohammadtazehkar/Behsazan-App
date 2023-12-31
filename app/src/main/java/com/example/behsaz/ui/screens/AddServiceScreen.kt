@@ -37,12 +37,12 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.behsaz.R
 import com.example.behsaz.presentation.events.AddServiceEvent
 import com.example.behsaz.presentation.events.SignInUIEvent
 import com.example.behsaz.presentation.viewmodels.AddServiceViewModel
-import com.example.behsaz.presentation.viewmodels.AddServiceViewModelFactory
 import com.example.behsaz.presentation.viewmodels.SharedViewModel
 import com.example.behsaz.ui.components.AppErrorSnackBar
 import com.example.behsaz.ui.components.AppTopAppBar
@@ -56,22 +56,22 @@ import com.example.behsaz.utils.Resource
 import com.example.behsaz.utils.UIText
 import kotlinx.coroutines.flow.collectLatest
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddServiceScreen(
     sharedViewModel: SharedViewModel,
+    addServiceViewModel: AddServiceViewModel = hiltViewModel(),
     categoryId: Int,
     categoryTitle: String,
     onSelectLocation: () -> Unit,
     onShowLocation: () -> Unit,
     onNavUp: () -> Unit
 ) {
-    val addServiceViewModel: AddServiceViewModel = viewModel(
+//    val addServiceViewModel: AddServiceViewModel = viewModel(
 //        factory = AddServiceViewModelFactory(
 //            categoryId,
 //            categoryTitle.trim().ifEmpty { stringResource(id = R.string.select_category) }
 //        )
-    )
+//    )
     val context = LocalContext.current
     val addServiceState = addServiceViewModel.addServiceState.value
     val snackbarHostState = remember { SnackbarHostState() }

@@ -5,4 +5,5 @@ sealed class SignInEvent{
     data object KeyboardClose : SignInEvent()
     data class  UpdateTextFieldState(var type:Int, val newValue: String): SignInEvent()
     data class LoginClicked(val onSignInCompleted: () -> Unit) : SignInEvent()
+    data class UpdateLoading(val status: Boolean) : SignInEvent()
 }

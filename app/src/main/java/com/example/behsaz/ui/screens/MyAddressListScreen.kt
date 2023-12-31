@@ -7,8 +7,10 @@ import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -37,22 +39,24 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.behsaz.R
 import com.example.behsaz.data.models.myAddress.MyAddressListData
 import com.example.behsaz.presentation.events.MyAddressListEvent
+import com.example.behsaz.presentation.events.MyServiceListEvent
 import com.example.behsaz.presentation.viewmodels.MyAddressListViewModel
 import com.example.behsaz.presentation.viewmodels.SharedViewModel
 import com.example.behsaz.ui.components.AppTopAppBar
 import com.example.behsaz.ui.components.CardColumnMediumCorner
 import com.example.behsaz.ui.components.EmptyView
+import com.example.behsaz.ui.components.ProgressBarDialog
 import com.example.behsaz.ui.components.TextTitleSmall
 import com.example.behsaz.utils.Resource
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MyAddressListScreen(
-    myAddressListViewModel: MyAddressListViewModel = viewModel(),
+    myAddressListViewModel: MyAddressListViewModel = hiltViewModel(),
     sharedViewModel: SharedViewModel,
     onAddAddressClick: () -> Unit,
     onEditAddressClick: (Int, String, String, Double, Double) -> Unit,
@@ -79,6 +83,14 @@ fun MyAddressListScreen(
             }
         }
     }
+    if (myAddressListState.isLoading) {
+        ProgressBarDialog(
+            onDismissRequest = {
+                myAddressListViewModel.onEvent(MyAddressListEvent.UpdateLoading(false))
+            }
+        )
+    }
+
     Scaffold(
         floatingActionButton = {
             AnimatedVisibility(
@@ -107,43 +119,55 @@ fun MyAddressListScreen(
                 }
             )
         }
-    ) {
-        if (myAddressListState.listState.isNotEmpty()) {
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(it)
-                    .background(MaterialTheme.colorScheme.background)
-                    .nestedScroll(nestedScrollConnection),
-                verticalArrangement = Arrangement.spacedBy(16.dp),
-            ) {
-                item {
-                    Spacer(modifier = Modifier.height(16.dp))
+    ) {paddingValue ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(MaterialTheme.colorScheme.background)
+                .padding(paddingValue)
+        ) {
+            if (myAddressListState.listState.isNotEmpty()) {
+                LazyColumn(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(MaterialTheme.colorScheme.background)
+                        .nestedScroll(nestedScrollConnection),
+                    verticalArrangement = Arrangement.spacedBy(16.dp),
+                ) {
+                    item {
+                        Spacer(modifier = Modifier.height(16.dp))
+                    }
+                    items(myAddressListState.listState.size) { index ->
+                        MyAddressListItem(
+                            item = myAddressListState.listState[index],
+                            onEditAddressClick = { id, title, address, latitude, longitude ->
+                                sharedViewModel.selectLocation(0.00, 0.00)
+                                onEditAddressClick(id, title, address, latitude, longitude)
+                            },
+                            onShowLocation = {
+                                val values = myAddressListState.listState[index].mapPoint.split(',')
+                                sharedViewModel.selectLocation(
+                                    values[0].toDouble(),
+                                    values[1].toDouble()
+                                )
+                                onShowLocation()
+                            }
+                        )
+                    }
+                    item {
+                        Spacer(modifier = Modifier.height(16.dp))
+                    }
                 }
-                items(myAddressListState.listState.size) { index ->
-                    MyAddressListItem(
-                        item = myAddressListState.listState[index],
-                        onEditAddressClick = { id, title, address, latitude, longitude ->
-                            sharedViewModel.selectLocation(0.00, 0.00)
-                            onEditAddressClick(id, title, address, latitude, longitude)
-                        },
-                        onShowLocation = {
-                            val values = myAddressListState.listState[index].mapPoint.split(',')
-                            sharedViewModel.selectLocation(
-                                values[0].toDouble(),
-                                values[1].toDouble()
-                            )
-                            onShowLocation()
-                        }
-                    )
-                }
-                item {
-                    Spacer(modifier = Modifier.height(16.dp))
+            }else{
+                Column (
+                    modifier = Modifier.fillMaxHeight().padding(16.dp),
+                    verticalArrangement = Arrangement.Center
+                ) {
+                    EmptyView(text = stringResource(id = R.string.empty_address_list))
                 }
             }
-        }else{
-            EmptyView(text = stringResource(id = R.string.empty_address_list))
         }
+
     }
 
     BackHandler {
@@ -156,13 +180,17 @@ fun MyAddressListScreen(
     when (myAddressListState.response) {
         is Resource.Loading -> {
             // Display loading UI
+            myAddressListViewModel.onEvent(MyAddressListEvent.UpdateLoading(true))
         }
         is Resource.Success -> {
             // Display success UI with data
+            myAddressListViewModel.onEvent(MyAddressListEvent.UpdateLoading(false))
             myAddressListViewModel.onEvent(MyAddressListEvent.PrepareList)
+
         }
         is Resource.Error -> {
             // Display error UI with message
+            myAddressListViewModel.onEvent(MyAddressListEvent.UpdateLoading(false))
         }
     }
 }
@@ -221,5 +249,3 @@ fun MyAddressListItem(
         }
     }
 }
-
-//data class MyAddressListData(val id: Int, val addressTitle: String, val address: String, val latitude: Double, val longitude: Double)

@@ -35,6 +35,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.behsaz.R
 import com.example.behsaz.presentation.constants.AppKeyboard
@@ -49,15 +50,15 @@ import com.example.behsaz.ui.components.PrimaryOutlinedButtonExtraSmallCorner
 import com.example.behsaz.presentation.events.SignInEvent
 import com.example.behsaz.presentation.events.SignInUIEvent
 import com.example.behsaz.presentation.viewmodels.SignInViewModel
+import com.example.behsaz.ui.components.ProgressBarDialog
 import com.example.behsaz.ui.models.TextInputData
 import com.example.behsaz.utils.Resource
 import kotlinx.coroutines.flow.collectLatest
 
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SignInScreen(
-    signInViewModel: SignInViewModel = viewModel(),
+    signInViewModel: SignInViewModel = hiltViewModel(),
     onNavigateToSignUp: () -> Unit,
     onNavigateToHome: () -> Unit,
 ) {
@@ -76,6 +77,13 @@ fun SignInScreen(
                 }
             }
         }
+    }
+    if (signInState.isLoading) {
+        ProgressBarDialog(
+            onDismissRequest = {
+                signInViewModel.onEvent(SignInEvent.UpdateLoading(false))
+            }
+        )
     }
 
     Scaffold(
@@ -165,12 +173,17 @@ fun SignInScreen(
     when (signInState.response) {
         is Resource.Loading -> {
             // Display loading UI
+            signInViewModel.onEvent(SignInEvent.UpdateLoading(true))
+
         }
         is Resource.Success -> {
             // Display success UI with data
+            signInViewModel.onEvent(SignInEvent.UpdateLoading(false))
         }
         is Resource.Error -> {
             // Display error UI with message
+            signInViewModel.onEvent(SignInEvent.UpdateLoading(false))
+
         }
     }
 }

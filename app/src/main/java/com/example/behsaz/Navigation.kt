@@ -206,7 +206,7 @@ fun BehsazNavHost(
                 )
             }
         ) {
-            HomeScreen2(
+            HomeScreen(
                 onNavigateToAddService = { catId,catTitle ->
                     navController.navigate("$ADD_SERVICE_SCREEN/$catId/$catTitle")
                 },

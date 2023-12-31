@@ -5,6 +5,7 @@ import com.example.behsaz.data.models.profile.APIUpdateProfileResponse
 import com.example.behsaz.utils.Resource
 
 data class ProfileState(
+    var isLoading: Boolean = true,
     var personalTextFieldStates : MutableList<String> = mutableListOf(),
     var userTextFieldStates : MutableList<String> = mutableListOf(),
     var isEditable: Boolean = false,
