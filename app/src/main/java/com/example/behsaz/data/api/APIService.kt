@@ -70,7 +70,7 @@ interface APIService {
     ): Response<APISignUpResponse>
 
 //    @FormUrlEncoded
-    @POST(SUB_URL_PROFILE)
+    @GET(SUB_URL_PROFILE)
     suspend fun profile(
         @Header(AUTHORIZATION) token: String,
     ): Response<APIProfileResponse>

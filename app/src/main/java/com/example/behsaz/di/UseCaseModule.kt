@@ -19,6 +19,7 @@ import com.example.behsaz.domain.usecase.GetMyAddressListUseCase
 import com.example.behsaz.domain.usecase.GetMyServiceListUseCase
 import com.example.behsaz.domain.usecase.GetProfileDataUseCase
 import com.example.behsaz.domain.usecase.GetRulesUseCase
+import com.example.behsaz.domain.usecase.GetUserFullNameUseCase
 import com.example.behsaz.domain.usecase.SignInUseCase
 import com.example.behsaz.domain.usecase.SignUpUseCase
 import com.example.behsaz.domain.usecase.UpdateMyAddressUseCase
@@ -143,5 +144,13 @@ class UseCaseModule {
         checkUserExistRepository: CheckUserExistRepository
     ):CheckUserExistUseCase{
         return CheckUserExistUseCase(checkUserExistRepository)
+    }
+
+    @Singleton
+    @Provides
+    fun provideGetUserFullNameUseCase(
+        homeRepository: HomeRepository
+    ):GetUserFullNameUseCase{
+        return GetUserFullNameUseCase(homeRepository)
     }
 }

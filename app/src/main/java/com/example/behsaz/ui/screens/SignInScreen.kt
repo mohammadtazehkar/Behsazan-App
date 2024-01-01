@@ -75,6 +75,7 @@ fun SignInScreen(
                         message = event.message.asString(context)
                     )
                 }
+                else -> {}
             }
         }
     }

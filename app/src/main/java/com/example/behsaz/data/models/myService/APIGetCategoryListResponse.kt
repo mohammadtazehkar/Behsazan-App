@@ -10,6 +10,6 @@ data class APIGetCategoryListResponse(
     @SerializedName("message")
     val message: String,
     @SerializedName("data")
-    val data: List<CategoryListData>
+    val data: List<CategoryListData>?
 
 )

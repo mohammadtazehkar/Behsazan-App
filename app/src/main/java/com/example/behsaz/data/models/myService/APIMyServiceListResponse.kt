@@ -9,6 +9,6 @@ data class APIMyServiceListResponse(
     @SerializedName("message")
     val message: String,
     @SerializedName("data")
-    val data: List<MyServiceListData>
+    val data: List<MyServiceListData>?
 
 )

@@ -15,6 +15,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -28,8 +29,8 @@ fun UserInfoContent(
     modifier: Modifier = Modifier,
     personalInfoItems: List<TextInputData>,
     userInfoItems: List<TextInputData>,
-    personalStateList: List<String>,
-    userStateList: List<String>,
+    personalStateList: List<MutableState<String>>,
+    userStateList: List<MutableState<String>>,
     isEditable: Boolean,
     isProfile: Boolean = false,
     onSubmitted: () -> Unit,
@@ -70,7 +71,7 @@ fun UserInfoContent(
 fun UserPersonalInfo(
     infoItems: List<TextInputData>,
     title: String,
-    stateList: List<String>,
+    stateList: List<MutableState<String>>,
     isEditable: Boolean = true,
     isProfileLastItem: Boolean = false,
     onValueChange: (Int,String) -> Unit,
@@ -88,7 +89,7 @@ fun UserPersonalInfo(
             infoItems.forEachIndexed { index, item ->
                 if (isProfileLastItem && index == REAGENT_TOKEN) {
                     TextInputItem(
-                        state = stateList[index],
+                        state = stateList[index].value,
                         item = item,
                         isEditable = false,
                         onValueChange = { type, value ->
@@ -98,7 +99,7 @@ fun UserPersonalInfo(
                     )
                 }else{
                     TextInputItem(
-                        state = stateList[index],
+                        state = stateList[index].value,
                         item = item,
                         isEditable = isEditable,
                         onValueChange = { type, value ->

@@ -34,27 +34,4 @@ class SignInRepositoryImpl (
             Resource.Error("No internet connection")
         }
     }
-
-//    private fun responseToResource(response: Response<APISignInResponse>):Resource<APISignInResponse>{
-//        if (response.isSuccessful){
-//            response.body()?.let {result ->
-//                return Resource.Success(result)
-//            }
-//        }
-//        return Resource.Error(response.message())
-//    }
-
-//    private suspend fun signInFromAPI():APISignInResponse{
-//        lateinit var result: APISignInResponse
-//        try {
-//            val response = signInRemoteDataSource.signIn()
-//            val body = response.body()
-//            if (body != null){
-//                result = body
-//            }
-//        }catch (exception: Exception){
-//            Log.i("mamali",exception.message.toString())
-//        }
-//        return result
-//    }
 }

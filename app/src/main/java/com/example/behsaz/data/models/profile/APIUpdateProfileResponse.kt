@@ -10,6 +10,6 @@ data class APIUpdateProfileResponse(
     val message: String,
 
     @SerializedName("data")
-    val data: UpdateProfileData
+    val data: UpdateProfileData?
 
 )

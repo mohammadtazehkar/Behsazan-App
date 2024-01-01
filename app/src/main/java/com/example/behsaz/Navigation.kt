@@ -245,7 +245,16 @@ fun BehsazNavHost(
             }
         ) {
             ProfileScreen(
-                onEditSubmitted = {},
+                onExpiredToken = {
+                    navController.navigate(SPLASH_SCREEN){
+                        popUpTo(PROFILE_SCREEN) {
+                            inclusive = true
+                        }
+                        popUpTo(HOME_SCREEN) {
+                            inclusive = true
+                        }
+                    }
+                },
                 onNavUp = navController::navigateUp
             )
         }

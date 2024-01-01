@@ -60,9 +60,27 @@ fun HomeScreen(
 
 
     LaunchedEffect(key1 = true) {
-        delay(500)  // the delay of 3 seconds
+        delay(500)  // the delay of 0.5 seconds
         drawerState.close()
     }
+    LaunchedEffect(key1 = homeState.response) {
+        when (homeState.response) {
+            is Resource.Loading -> {
+                // Display loading UI
+                homeViewModel.onEvent(HomeEvent.UpdateLoading(true))
+            }
+            is Resource.Success -> {
+                // Display success UI with data
+                homeViewModel.onEvent(HomeEvent.UpdateLoading(false))
+                homeViewModel.onEvent(HomeEvent.PrepareData)
+            }
+            is Resource.Error -> {
+                // Display error UI with message
+                homeViewModel.onEvent(HomeEvent.UpdateLoading(false))
+            }
+        }
+    }
+
     if (homeState.logoutDialogVisible) {
         LogoutDialog(
             onDismissRequest = {
@@ -84,7 +102,9 @@ fun HomeScreen(
 
     ModalNavigationDrawer(
         drawerContent = {
-            AppDrawer { route ->
+            AppDrawer (
+                fullName = homeState.fullName,
+            ){ route ->
                 if (route == Destinations.LOG_OUT_SCREEN) {
                     homeViewModel.onEvent(HomeEvent.UpdateLogoutDialog)
                 } else {
@@ -112,22 +132,6 @@ fun HomeScreen(
                     onNavigateToAddService(item.id,item.title)
                 }
             )
-        }
-    }
-
-    when (homeState.response) {
-        is Resource.Loading -> {
-            // Display loading UI
-            homeViewModel.onEvent(HomeEvent.UpdateLoading(true))
-        }
-        is Resource.Success -> {
-            // Display success UI with data
-            homeViewModel.onEvent(HomeEvent.UpdateLoading(false))
-            homeViewModel.onEvent(HomeEvent.PrepareData)
-        }
-        is Resource.Error -> {
-            // Display error UI with message
-            homeViewModel.onEvent(HomeEvent.UpdateLoading(false))
         }
     }
 

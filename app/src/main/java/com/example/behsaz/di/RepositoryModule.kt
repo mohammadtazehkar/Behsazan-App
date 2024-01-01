@@ -138,10 +138,12 @@ class RepositoryModule {
     @Provides
     fun provideHomeRepository(
         homeRemoteDataSource: HomeRemoteDataSource,
+        appLocalDataSource: AppLocalDataSource,
         networkUtil: NetworkUtil
     ): HomeRepository {
         return HomeRepositoryImpl(
             homeRemoteDataSource,
+            appLocalDataSource,
             networkUtil
         )
     }

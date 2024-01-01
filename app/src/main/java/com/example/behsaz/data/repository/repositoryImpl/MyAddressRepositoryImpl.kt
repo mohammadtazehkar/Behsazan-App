@@ -2,9 +2,11 @@ package com.example.behsaz.data.repository.repositoryImpl
 
 import com.example.behsaz.data.models.myAddress.APIAddAddressResponse
 import com.example.behsaz.data.models.myAddress.APIMyAddressListResponse
+import com.example.behsaz.data.models.profile.APIProfileResponse
 import com.example.behsaz.data.repository.datasource.AppLocalDataSource
 import com.example.behsaz.data.repository.datasource.MyAddressRemoteDataSource
 import com.example.behsaz.domain.repository.MyAddressRepository
+import com.example.behsaz.utils.JSonStatusCode
 import com.example.behsaz.utils.NetworkUtil
 import com.example.behsaz.utils.Resource
 
@@ -17,12 +19,20 @@ class MyAddressRepositoryImpl(
     override suspend fun getMyAddressList(): Resource<APIMyAddressListResponse> {
         return if (networkUtil.isInternetAvailable()) {
             try {
-                val token = appLocalDataSource.getUserTokenFromDB()
+                val token = appLocalDataSource.getUserTokenTypeFromDB() + " " + appLocalDataSource.getUserTokenFromDB()
                 val response = myAddressRemoteDataSource.getMyAddressList(token)
                 if (response.isSuccessful && response.body() != null) {
                     Resource.Success(response.body()!!)
                 } else {
-                    Resource.Error("An error occurred")
+                    if (response.code() == JSonStatusCode.EXPIRED_TOKEN){
+                        appLocalDataSource.deleteUserInfo()
+                        appLocalDataSource.deleteUserToken()
+                        Resource.Error("expired Token",
+                            APIMyAddressListResponse(response.code(),"expired Token", null)
+                        )
+                    }else{
+                        Resource.Error("An error occurred")
+                    }
                 }
             } catch (e: Exception) {
                 Resource.Error(e.message ?: "An error occurred")
@@ -39,12 +49,18 @@ class MyAddressRepositoryImpl(
     ): Resource<APIAddAddressResponse> {
         return if (networkUtil.isInternetAvailable()) {
             try {
-                val token = appLocalDataSource.getUserTokenFromDB()
+                val token = appLocalDataSource.getUserTokenTypeFromDB() + " " + appLocalDataSource.getUserTokenFromDB()
                 val response = myAddressRemoteDataSource.addAddress(token, title, address, mapPoint)
                 if (response.isSuccessful && response.body() != null) {
                     Resource.Success(response.body()!!)
                 } else {
-                    Resource.Error("An error occurred")
+                    if (response.code() == JSonStatusCode.EXPIRED_TOKEN){
+                        appLocalDataSource.deleteUserInfo()
+                        appLocalDataSource.deleteUserToken()
+                        Resource.Error("expired Token",APIAddAddressResponse(response.code(),"expired Token"))
+                    }else{
+                        Resource.Error("An error occurred")
+                    }
                 }
             } catch (e: Exception) {
                 Resource.Error(e.message ?: "An error occurred")
@@ -62,12 +78,18 @@ class MyAddressRepositoryImpl(
     ): Resource<APIAddAddressResponse> {
         return if (networkUtil.isInternetAvailable()) {
             try {
-                val token = appLocalDataSource.getUserTokenFromDB()
+                val token = appLocalDataSource.getUserTokenTypeFromDB() + " " + appLocalDataSource.getUserTokenFromDB()
                 val response = myAddressRemoteDataSource.updateAddress(token, id, title, address, mapPoint)
                 if (response.isSuccessful && response.body() != null) {
                     Resource.Success(response.body()!!)
                 } else {
-                    Resource.Error("An error occurred")
+                    if (response.code() == JSonStatusCode.EXPIRED_TOKEN){
+                        appLocalDataSource.deleteUserInfo()
+                        appLocalDataSource.deleteUserToken()
+                        Resource.Error("expired Token",APIAddAddressResponse(response.code(),"expired Token"))
+                    }else{
+                        Resource.Error("An error occurred")
+                    }
                 }
             } catch (e: Exception) {
                 Resource.Error(e.message ?: "An error occurred")

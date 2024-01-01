@@ -9,6 +9,6 @@ data class APIMyAddressListResponse(
     @SerializedName("message")
     val message: String,
     @SerializedName("data")
-    val data: List<MyAddressListData>
+    val data: List<MyAddressListData>?
 
 )

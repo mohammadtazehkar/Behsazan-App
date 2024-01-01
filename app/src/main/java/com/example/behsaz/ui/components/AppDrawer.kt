@@ -85,9 +85,9 @@ private val bottomItems = listOf(
 )
 
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AppDrawer(
+    fullName : String,
     modifier: Modifier = Modifier,
     onDrawerItemClick: (String) -> Unit
 ) {
@@ -100,18 +100,19 @@ fun AppDrawer(
         ) {
             Spacer(modifier = Modifier.height(48.dp))
             DrawerSection(
+                fullName,
                 topItems,
                 onDrawerItemClick
             )
             Spacer(modifier = Modifier.height(24.dp))
             DrawerSection(
-                middleItems,
-                onDrawerItemClick
+                items =  middleItems,
+                onDrawerItemClick =  onDrawerItemClick
             )
             Spacer(modifier = Modifier.height(24.dp))
             DrawerSection(
-                bottomItems,
-                onDrawerItemClick
+                items = bottomItems,
+                onDrawerItemClick =  onDrawerItemClick
             )
             Spacer(modifier = Modifier.height(48.dp))
             DrawerFooter()
@@ -121,6 +122,7 @@ fun AppDrawer(
 
 @Composable
 fun DrawerSection(
+    fullName: String = "",
     items: List<DrawerItemData>,
     onDrawerItemClick: (String) -> Unit
 ) {
@@ -130,9 +132,11 @@ fun DrawerSection(
     ) {
         for (item in items) {
             DrawerSectionItem(
+                fullName = fullName,
                 iconId = item.imageResourceId,
                 titleId = item.titleId,
                 route = item.route,
+                isFirst = item == items[0] && fullName.isNotEmpty(),
                 isLast = item == items[items.lastIndex],
                 onDrawerItemClick = onDrawerItemClick
             )
@@ -142,9 +146,11 @@ fun DrawerSection(
 
 @Composable
 fun DrawerSectionItem(
+    fullName: String,
     iconId: Int,
     titleId: Int,
     route: String,
+    isFirst: Boolean,
     isLast: Boolean,
     onDrawerItemClick: (String) -> Unit
 ) {
@@ -156,7 +162,11 @@ fun DrawerSectionItem(
             horizontalArrangement = Arrangement.End,
             verticalAlignment = CenterVertically
         ) {
-            TextTitleMedium(text = stringResource(id = titleId))
+            if (isFirst) {
+                TextTitleMedium(text = fullName)
+            }else {
+                TextTitleMedium(text = stringResource(id = titleId))
+            }
             Image(
                 modifier = Modifier
                     .padding(8.dp)

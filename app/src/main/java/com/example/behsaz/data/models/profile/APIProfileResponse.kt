@@ -10,6 +10,6 @@ data class APIProfileResponse(
     val message: String,
 
     @SerializedName("data")
-    val data: ProfileData
+    val data: ProfileData?
 
 )

@@ -11,6 +11,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.behsaz.R
 import com.example.behsaz.domain.usecase.GetProfileDataUseCase
 import com.example.behsaz.domain.usecase.UpdateProfileDataUseCase
+import com.example.behsaz.presentation.constants.SignInInputTypes
 import com.example.behsaz.utils.UIText
 import com.example.behsaz.presentation.constants.SignUpInputTypes
 import com.example.behsaz.presentation.constants.SignUpInputTypes.EMAIL
@@ -24,6 +25,7 @@ import com.example.behsaz.presentation.constants.SignUpInputTypes.USERNAME
 import com.example.behsaz.presentation.events.ProfileEvent
 import com.example.behsaz.presentation.events.SignInUIEvent
 import com.example.behsaz.presentation.states.ProfileState
+import com.example.behsaz.utils.JSonStatusCode
 import com.example.behsaz.utils.JSonStatusCode.DUPLICATE_USERNAME
 import com.example.behsaz.utils.JSonStatusCode.SUCCESS
 import com.example.behsaz.utils.Resource
@@ -41,8 +43,8 @@ class ProfileViewModel @Inject constructor(
     private val _profileState = mutableStateOf(
         ProfileState(
             isEditable = false,
-            personalTextFieldStates = mutableStateListOf("", "", "", ""),
-            userTextFieldStates = mutableStateListOf("", "", "", ""),
+            personalTextFieldStates = mutableStateListOf(mutableStateOf(""), mutableStateOf(""), mutableStateOf(""), mutableStateOf("")),
+            userTextFieldStates = mutableStateListOf(mutableStateOf(""), mutableStateOf(""), mutableStateOf(""), mutableStateOf("")),
             getProfileResponse = Resource.Loading(),
             updateProfileResponse = Resource.Error("")
         )
@@ -66,7 +68,7 @@ class ProfileViewModel @Inject constructor(
 
             is ProfileEvent.UpdatePersonalTextFieldState -> {
                 val newStateList = _profileState.value.personalTextFieldStates
-                newStateList[event.type] = event.newValue
+                newStateList[event.type].value = event.newValue
                 _profileState.value = _profileState.value.copy(
                     personalTextFieldStates = newStateList
                 )
@@ -74,14 +76,14 @@ class ProfileViewModel @Inject constructor(
 
             is ProfileEvent.UpdateUserTextFieldState -> {
                 val newStateList = _profileState.value.userTextFieldStates
-                newStateList[event.type] = event.newValue
+                newStateList[event.type].value = event.newValue
                 _profileState.value = _profileState.value.copy(
                     userTextFieldStates = newStateList
                 )
             }
 
             is ProfileEvent.UpdateClicked -> {
-                update(onSignUpCompleted = event.onSignUpCompleted)
+                update(onUpdateCompleted = event.onUpdateCompleted)
             }
 
             is ProfileEvent.UpdateLoading -> {
@@ -91,34 +93,55 @@ class ProfileViewModel @Inject constructor(
             }
 
             is ProfileEvent.PrepareData -> {
-                prepareData()
+                prepareData(event.fromUpdate)
             }
 
         }
     }
 
     private fun getProfileData() {
-        Log.i("mamali","getProfileData")
         viewModelScope.launch {
             _profileState.value = profileState.value.copy(
                 getProfileResponse = getProfileUseCase.execute()
             )
+            if (profileState.value.getProfileResponse.data?.statusCode == JSonStatusCode.EXPIRED_TOKEN){
+                _uiEventFlow.emit(
+                    SignInUIEvent.ExpiredToken(
+                        message = UIText.StringResource(
+                            resId = R.string.expired_token,
+                            profileState.value.userTextFieldStates[SignInInputTypes.PASSWORD]
+                        )
+                    )
+                )
+            }
         }
+
     }
 
-    private fun prepareData() {
-        Log.i("mamali",profileState.value.personalTextFieldStates.toString())
+    private fun prepareData(fromUpdate: Boolean) {
         val personalStateList = profileState.value.personalTextFieldStates
-        personalStateList[FIRSTNAME] = profileState.value.getProfileResponse.data?.data!!.firstName
-        personalStateList[LASTNAME] = profileState.value.getProfileResponse.data?.data!!.lastName
-        personalStateList[PHONE_NUMBER] = profileState.value.getProfileResponse.data?.data!!.phoneNumber
-        personalStateList[MOBILE_NUMBER] = profileState.value.getProfileResponse.data?.data!!.mobileNumber
+        val userStateList = profileState.value.userTextFieldStates
 
-        val userStateList = profileState.value.personalTextFieldStates
-        userStateList[USERNAME] = profileState.value.getProfileResponse.data?.data!!.username
-        userStateList[PASSWORD] = profileState.value.getProfileResponse.data?.data!!.password
-        userStateList[EMAIL] = profileState.value.getProfileResponse.data?.data!!.email
-        userStateList[REAGENT_TOKEN] = profileState.value.getProfileResponse.data?.data!!.reagentToken
+        if (fromUpdate){
+            personalStateList[FIRSTNAME].value = profileState.value.updateProfileResponse.data?.data?.customer!!.firstName
+            personalStateList[LASTNAME].value = profileState.value.updateProfileResponse.data?.data?.customer!!.lastName
+            personalStateList[PHONE_NUMBER].value = profileState.value.updateProfileResponse.data?.data?.customer!!.phoneNumber
+            personalStateList[MOBILE_NUMBER].value = profileState.value.updateProfileResponse.data?.data?.customer!!.mobileNumber
+            userStateList[USERNAME].value = profileState.value.updateProfileResponse.data?.data?.customer!!.username
+            userStateList[PASSWORD].value = profileState.value.updateProfileResponse.data?.data?.customer!!.password
+            userStateList[EMAIL].value = profileState.value.updateProfileResponse.data?.data?.customer!!.email
+            userStateList[REAGENT_TOKEN].value = profileState.value.updateProfileResponse.data?.data?.customer!!.reagentToken
+        }else {
+            personalStateList[FIRSTNAME].value = profileState.value.getProfileResponse.data?.data!!.firstName
+            personalStateList[LASTNAME].value = profileState.value.getProfileResponse.data?.data!!.lastName
+            personalStateList[PHONE_NUMBER].value = profileState.value.getProfileResponse.data?.data!!.phoneNumber
+            personalStateList[MOBILE_NUMBER].value = profileState.value.getProfileResponse.data?.data!!.mobileNumber
+            userStateList[USERNAME].value = profileState.value.getProfileResponse.data?.data!!.username
+            userStateList[PASSWORD].value = profileState.value.getProfileResponse.data?.data!!.password
+            userStateList[EMAIL].value = profileState.value.getProfileResponse.data?.data!!.email
+            userStateList[REAGENT_TOKEN].value = profileState.value.getProfileResponse.data?.data!!.reagentToken
+        }
+
         _profileState.value = profileState.value.copy(
             personalTextFieldStates = personalStateList,
             userTextFieldStates = userStateList
@@ -126,9 +149,9 @@ class ProfileViewModel @Inject constructor(
     }
 
     private fun update(
-        onSignUpCompleted: () -> Unit
+        onUpdateCompleted: () -> Unit
     ) {
-        if (_profileState.value.personalTextFieldStates[FIRSTNAME].isEmpty()) {
+        if (_profileState.value.personalTextFieldStates[FIRSTNAME].value.isEmpty()) {
             viewModelScope.launch {
                 _uiEventFlow.emit(
                     SignInUIEvent.ShowMessage(
@@ -139,7 +162,8 @@ class ProfileViewModel @Inject constructor(
                     )
                 )
             }
-        } else if (_profileState.value.personalTextFieldStates[LASTNAME].isEmpty()) {
+        }
+        else if (_profileState.value.personalTextFieldStates[LASTNAME].value.isEmpty()) {
             viewModelScope.launch {
                 _uiEventFlow.emit(
                     SignInUIEvent.ShowMessage(
@@ -150,7 +174,8 @@ class ProfileViewModel @Inject constructor(
                     )
                 )
             }
-        } else if (_profileState.value.personalTextFieldStates[MOBILE_NUMBER].isEmpty()) {
+        }
+        else if (_profileState.value.personalTextFieldStates[MOBILE_NUMBER].value.isEmpty()) {
             viewModelScope.launch {
                 _uiEventFlow.emit(
                     SignInUIEvent.ShowMessage(
@@ -161,7 +186,8 @@ class ProfileViewModel @Inject constructor(
                     )
                 )
             }
-        } else if (_profileState.value.personalTextFieldStates[MOBILE_NUMBER].length != 11) {
+        }
+        else if (_profileState.value.personalTextFieldStates[MOBILE_NUMBER].value.length != 11) {
             viewModelScope.launch {
                 _uiEventFlow.emit(
                     SignInUIEvent.ShowMessage(
@@ -172,10 +198,8 @@ class ProfileViewModel @Inject constructor(
                     )
                 )
             }
-        } else if (_profileState.value.personalTextFieldStates[MOBILE_NUMBER].substring(
-                0,
-                2
-            ) != "09"
+        }
+        else if (_profileState.value.personalTextFieldStates[MOBILE_NUMBER].value.substring(0, 2) != "09"
         ) {
             viewModelScope.launch {
                 _uiEventFlow.emit(
@@ -187,7 +211,8 @@ class ProfileViewModel @Inject constructor(
                     )
                 )
             }
-        } else if (_profileState.value.userTextFieldStates[USERNAME].isEmpty()) {
+        }
+        else if (_profileState.value.userTextFieldStates[USERNAME].value.isEmpty()) {
             viewModelScope.launch {
                 _uiEventFlow.emit(
                     SignInUIEvent.ShowMessage(
@@ -198,7 +223,8 @@ class ProfileViewModel @Inject constructor(
                     )
                 )
             }
-        } else if (_profileState.value.userTextFieldStates[PASSWORD].isEmpty()) {
+        }
+        else if (_profileState.value.userTextFieldStates[PASSWORD].value.isEmpty()) {
             viewModelScope.launch {
                 _uiEventFlow.emit(
                     SignInUIEvent.ShowMessage(
@@ -209,9 +235,10 @@ class ProfileViewModel @Inject constructor(
                     )
                 )
             }
-        } else if (
-            _profileState.value.userTextFieldStates[EMAIL].isNotEmpty() &&
-            !Patterns.EMAIL_ADDRESS.matcher(_profileState.value.userTextFieldStates[EMAIL])
+        }
+        else if (
+            _profileState.value.userTextFieldStates[EMAIL].value.isNotEmpty() &&
+            !Patterns.EMAIL_ADDRESS.matcher(_profileState.value.userTextFieldStates[EMAIL].value)
                 .matches()
         ) {
             viewModelScope.launch {
@@ -224,18 +251,21 @@ class ProfileViewModel @Inject constructor(
                     )
                 )
             }
-        } else {
-            //TODO saveUserInfo and signUp
+        }
+        else {
+            _profileState.value = profileState.value.copy(
+                updateProfileResponse = Resource.Loading()
+            )
             viewModelScope.launch {
                 _profileState.value = profileState.value.copy(
                     updateProfileResponse = updateProfileUseCase.execute(
-                        profileState.value.personalTextFieldStates[FIRSTNAME],
-                        profileState.value.personalTextFieldStates[LASTNAME],
-                        profileState.value.personalTextFieldStates[PHONE_NUMBER],
-                        profileState.value.personalTextFieldStates[MOBILE_NUMBER],
-                        profileState.value.userTextFieldStates[USERNAME],
-                        profileState.value.userTextFieldStates[PASSWORD],
-                        profileState.value.userTextFieldStates[EMAIL]
+                        profileState.value.personalTextFieldStates[FIRSTNAME].value,
+                        profileState.value.personalTextFieldStates[LASTNAME].value,
+                        profileState.value.personalTextFieldStates[PHONE_NUMBER].value,
+                        profileState.value.personalTextFieldStates[MOBILE_NUMBER].value,
+                        profileState.value.userTextFieldStates[USERNAME].value,
+                        profileState.value.userTextFieldStates[PASSWORD].value,
+                        profileState.value.userTextFieldStates[EMAIL].value
                     )
                 )
                 if (_profileState.value.updateProfileResponse.data?.statusCode == DUPLICATE_USERNAME) {
@@ -248,7 +278,7 @@ class ProfileViewModel @Inject constructor(
                         )
                     )
                 } else if (_profileState.value.updateProfileResponse.data?.statusCode == SUCCESS) {
-                    onSignUpCompleted()
+                    onUpdateCompleted()
                 }
             }
         }

@@ -46,12 +46,3 @@ class RulesViewModel @Inject constructor(private val getRulesUseCase: GetRulesUs
     }
 
 }
-
-//class RulesViewModelFactory(private val getRulesUseCase: GetRulesUseCase) : ViewModelProvider.Factory {
-//    override fun <T : ViewModel> create(modelClass: Class<T>): T {
-//        if (modelClass.isAssignableFrom(RulesViewModel::class.java)){
-//            return RulesViewModel(getRulesUseCase) as T
-//        }
-//        throw IllegalArgumentException("Unknown View Model Class")
-//    }
-//}

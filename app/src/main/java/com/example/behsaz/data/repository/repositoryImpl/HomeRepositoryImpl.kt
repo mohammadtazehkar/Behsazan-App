@@ -1,6 +1,7 @@
 package com.example.behsaz.data.repository.repositoryImpl
 
 import com.example.behsaz.data.models.home.APIHomeDataResponse
+import com.example.behsaz.data.repository.datasource.AppLocalDataSource
 import com.example.behsaz.data.repository.datasource.HomeRemoteDataSource
 import com.example.behsaz.domain.repository.HomeRepository
 import com.example.behsaz.utils.NetworkUtil
@@ -8,6 +9,7 @@ import com.example.behsaz.utils.Resource
 
 class HomeRepositoryImpl(
     private val homeRemoteDataSource: HomeRemoteDataSource,
+    private val appLocalDataSource: AppLocalDataSource,
     private val networkUtil: NetworkUtil
 ) : HomeRepository {
 
@@ -26,5 +28,10 @@ class HomeRepositoryImpl(
         } else {
             Resource.Error("No internet connection")
         }
+    }
+
+    override suspend fun getUserFullName(): String {
+        return appLocalDataSource.getUserFirstNameFromDB() + " " + appLocalDataSource.getUserLastNameFromDB()
+
     }
 }

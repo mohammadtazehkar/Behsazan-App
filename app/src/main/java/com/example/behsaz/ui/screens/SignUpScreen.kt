@@ -51,6 +51,7 @@ fun SignUpScreen(
                         message = event.message.asString(context)
                     )
                 }
+                else -> {}
             }
         }
     }

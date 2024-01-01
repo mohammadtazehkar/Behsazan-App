@@ -3,9 +3,11 @@ package com.example.behsaz.data.repository.repositoryImpl
 import com.example.behsaz.data.models.myService.APIAddServiceResponse
 import com.example.behsaz.data.models.myService.APIGetCategoryListResponse
 import com.example.behsaz.data.models.myService.APIMyServiceListResponse
+import com.example.behsaz.data.models.profile.APIProfileResponse
 import com.example.behsaz.data.repository.datasource.AppLocalDataSource
 import com.example.behsaz.data.repository.datasource.MyServiceListRemoteDataSource
 import com.example.behsaz.domain.repository.MyServiceListRepository
+import com.example.behsaz.utils.JSonStatusCode
 import com.example.behsaz.utils.NetworkUtil
 import com.example.behsaz.utils.Resource
 import com.example.behsaz.utils.ServerConstants.BASE_URL
@@ -20,12 +22,20 @@ class MyServiceListRepositoryImpl (
     override suspend fun getMyServiceList(): Resource<APIMyServiceListResponse> {
         return if (networkUtil.isInternetAvailable()) {
             try {
-                val token = appLocalDataSource.getUserTokenFromDB()
+                val token = appLocalDataSource.getUserTokenTypeFromDB() + " " +  appLocalDataSource.getUserTokenFromDB()
                 val response = myServiceListRemoteDataSource.getMyServiceList(token)
                 if (response.isSuccessful && response.body() != null) {
                     Resource.Success(response.body()!!)
                 } else {
-                    Resource.Error("An error occurred")
+                    if (response.code() == JSonStatusCode.EXPIRED_TOKEN){
+                        appLocalDataSource.deleteUserInfo()
+                        appLocalDataSource.deleteUserToken()
+                        Resource.Error("expired Token",
+                            APIMyServiceListResponse(response.code(),"expired Token", null)
+                        )
+                    }else{
+                        Resource.Error("An error occurred")
+                    }
                 }
             } catch (e: Exception) {
                 Resource.Error(e.message ?: "An error occurred")
@@ -44,12 +54,18 @@ class MyServiceListRepositoryImpl (
     ): Resource<APIAddServiceResponse> {
         return if (networkUtil.isInternetAvailable()) {
             try {
-                val token = appLocalDataSource.getUserTokenFromDB()
+                val token = appLocalDataSource.getUserTokenTypeFromDB() + " " + appLocalDataSource.getUserTokenFromDB()
                 val response = myServiceListRemoteDataSource.addService(token, mapPoint, address, customerAddressId, serviceTypeId, userDescription)
                 if (response.isSuccessful && response.body() != null) {
                     Resource.Success(response.body()!!)
                 } else {
-                    Resource.Error("An error occurred")
+                    if (response.code() == JSonStatusCode.EXPIRED_TOKEN){
+                        appLocalDataSource.deleteUserInfo()
+                        appLocalDataSource.deleteUserToken()
+                        Resource.Error("expired Token",APIAddServiceResponse(response.code(),"expired Token"))
+                    }else{
+                        Resource.Error("An error occurred")
+                    }
                 }
             } catch (e: Exception) {
                 Resource.Error(e.message ?: "An error occurred")

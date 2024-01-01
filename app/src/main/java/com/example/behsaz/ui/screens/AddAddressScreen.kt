@@ -83,6 +83,7 @@ fun AddAddressScreen(
                         message = event.message.asString(context)
                     )
                 }
+                else -> {}
             }
         }
     }

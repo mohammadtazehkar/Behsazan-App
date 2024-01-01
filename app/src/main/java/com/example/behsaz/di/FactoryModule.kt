@@ -33,16 +33,6 @@ class FactoryModule {
 
 //    @Singleton
 //    @Provides
-//    fun provideRulesViewModelFactory(
-//        getRulesUseCase: GetRulesUseCase,
-//    ): RulesViewModelFactory {
-//        return RulesViewModelFactory(
-//            getRulesUseCase
-//        )
-//    }
-
-//    @Singleton
-//    @Provides
 //    fun provideAddServiceViewModelFactory(
 //        addMyServiceUseCase: AddMyServiceUseCase,
 //        getMyAddressListUseCase: GetMyAddressListUseCase,

@@ -7,6 +7,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.example.behsaz.domain.usecase.GetHomeDataUseCase
+import com.example.behsaz.domain.usecase.GetUserFullNameUseCase
 import com.example.behsaz.presentation.events.HomeEvent
 import com.example.behsaz.presentation.events.SignInUIEvent
 import com.example.behsaz.presentation.states.HomeState
@@ -18,7 +19,10 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class HomeViewModel @Inject constructor(private val getHomeDataUseCase: GetHomeDataUseCase) :
+class HomeViewModel @Inject constructor(
+    private val getHomeDataUseCase: GetHomeDataUseCase,
+    private val getUserFullNameUseCase: GetUserFullNameUseCase
+) :
     ViewModel() {
 
     private val _homeState = mutableStateOf(
@@ -43,6 +47,7 @@ class HomeViewModel @Inject constructor(private val getHomeDataUseCase: GetHomeD
     init {
         viewModelScope.launch {
             _homeState.value = homeState.value.copy(
+                fullName = getUserFullNameUseCase.execute(),
                 response = getHomeDataUseCase.execute()
             )
         }

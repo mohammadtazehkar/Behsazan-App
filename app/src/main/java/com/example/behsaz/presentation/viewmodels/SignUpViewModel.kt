@@ -28,8 +28,8 @@ import javax.inject.Inject
 class SignUpViewModel @Inject constructor(private val signUpUseCase: SignUpUseCase): ViewModel() {
     private val _signUpState = mutableStateOf(
         SignUpState(
-            personalTextFieldStates = mutableStateListOf("","","",""),
-            userTextFieldStates = mutableStateListOf("","","",""),
+            personalTextFieldStates = mutableStateListOf(mutableStateOf(""), mutableStateOf(""), mutableStateOf(""), mutableStateOf("")),
+            userTextFieldStates = mutableStateListOf(mutableStateOf(""), mutableStateOf(""), mutableStateOf(""), mutableStateOf("")),
             response = Resource.Error("")
         )
     )
@@ -44,14 +44,14 @@ class SignUpViewModel @Inject constructor(private val signUpUseCase: SignUpUseCa
 
             is SignUpEvent.UpdatePersonalTextFieldState -> {
                 val newStateList = _signUpState.value.personalTextFieldStates
-                newStateList[event.type] = event.newValue
+                newStateList[event.type].value = event.newValue
                 _signUpState.value = _signUpState.value.copy(
                     personalTextFieldStates = newStateList
                 )
             }
             is SignUpEvent.UpdateUserTextFieldState -> {
                 val newStateList = _signUpState.value.userTextFieldStates
-                newStateList[event.type] = event.newValue
+                newStateList[event.type].value = event.newValue
                 _signUpState.value = _signUpState.value.copy(
                     userTextFieldStates = newStateList
                 )
@@ -70,7 +70,7 @@ class SignUpViewModel @Inject constructor(private val signUpUseCase: SignUpUseCa
     private fun signUp(
         onSignUpCompleted: () -> Unit
     ) {
-        if (_signUpState.value.personalTextFieldStates[SignUpInputTypes.FIRSTNAME].isEmpty()) {
+        if (_signUpState.value.personalTextFieldStates[SignUpInputTypes.FIRSTNAME].value.isEmpty()) {
             viewModelScope.launch {
                 _uiEventFlow.emit(
                     SignInUIEvent.ShowMessage(
@@ -82,7 +82,7 @@ class SignUpViewModel @Inject constructor(private val signUpUseCase: SignUpUseCa
                 )
             }
         }
-        else if (_signUpState.value.personalTextFieldStates[SignUpInputTypes.LASTNAME].isEmpty()) {
+        else if (_signUpState.value.personalTextFieldStates[SignUpInputTypes.LASTNAME].value.isEmpty()) {
             viewModelScope.launch {
                 _uiEventFlow.emit(
                     SignInUIEvent.ShowMessage(
@@ -94,7 +94,7 @@ class SignUpViewModel @Inject constructor(private val signUpUseCase: SignUpUseCa
                 )
             }
         }
-        else if (_signUpState.value.personalTextFieldStates[SignUpInputTypes.MOBILE_NUMBER].isEmpty()) {
+        else if (_signUpState.value.personalTextFieldStates[SignUpInputTypes.MOBILE_NUMBER].value.isEmpty()) {
             viewModelScope.launch {
                 _uiEventFlow.emit(
                     SignInUIEvent.ShowMessage(
@@ -106,7 +106,7 @@ class SignUpViewModel @Inject constructor(private val signUpUseCase: SignUpUseCa
                 )
             }
         }
-        else if (_signUpState.value.personalTextFieldStates[SignUpInputTypes.MOBILE_NUMBER].length != 11) {
+        else if (_signUpState.value.personalTextFieldStates[SignUpInputTypes.MOBILE_NUMBER].value.length != 11) {
             viewModelScope.launch {
                 _uiEventFlow.emit(
                     SignInUIEvent.ShowMessage(
@@ -118,7 +118,7 @@ class SignUpViewModel @Inject constructor(private val signUpUseCase: SignUpUseCa
                 )
             }
         }
-        else if (_signUpState.value.personalTextFieldStates[SignUpInputTypes.MOBILE_NUMBER].substring(0,2) != "09") {
+        else if (_signUpState.value.personalTextFieldStates[SignUpInputTypes.MOBILE_NUMBER].value.substring(0,2) != "09") {
             viewModelScope.launch {
                 _uiEventFlow.emit(
                     SignInUIEvent.ShowMessage(
@@ -130,7 +130,7 @@ class SignUpViewModel @Inject constructor(private val signUpUseCase: SignUpUseCa
                 )
             }
         }
-        else if (_signUpState.value.userTextFieldStates[SignUpInputTypes.USERNAME].isEmpty()) {
+        else if (_signUpState.value.userTextFieldStates[SignUpInputTypes.USERNAME].value.isEmpty()) {
             viewModelScope.launch {
                 _uiEventFlow.emit(
                     SignInUIEvent.ShowMessage(
@@ -142,7 +142,7 @@ class SignUpViewModel @Inject constructor(private val signUpUseCase: SignUpUseCa
                 )
             }
         }
-        else if (_signUpState.value.userTextFieldStates[SignUpInputTypes.PASSWORD].isEmpty()) {
+        else if (_signUpState.value.userTextFieldStates[SignUpInputTypes.PASSWORD].value.isEmpty()) {
             viewModelScope.launch {
                 _uiEventFlow.emit(
                     SignInUIEvent.ShowMessage(
@@ -155,8 +155,8 @@ class SignUpViewModel @Inject constructor(private val signUpUseCase: SignUpUseCa
             }
         }
         else if (
-            signUpState.value.userTextFieldStates[SignUpInputTypes.EMAIL].isNotEmpty() &&
-            !Patterns.EMAIL_ADDRESS.matcher(_signUpState.value.userTextFieldStates[SignUpInputTypes.EMAIL]).matches()
+            signUpState.value.userTextFieldStates[SignUpInputTypes.EMAIL].value.isNotEmpty() &&
+            !Patterns.EMAIL_ADDRESS.matcher(_signUpState.value.userTextFieldStates[SignUpInputTypes.EMAIL].value).matches()
             ){
             viewModelScope.launch {
                 _uiEventFlow.emit(
@@ -176,14 +176,14 @@ class SignUpViewModel @Inject constructor(private val signUpUseCase: SignUpUseCa
             viewModelScope.launch {
                 _signUpState.value = signUpState.value.copy(
                     response = signUpUseCase.execute(
-                        signUpState.value.personalTextFieldStates[SignUpInputTypes.FIRSTNAME],
-                        signUpState.value.personalTextFieldStates[SignUpInputTypes.LASTNAME],
-                        signUpState.value.personalTextFieldStates[SignUpInputTypes.PHONE_NUMBER],
-                        signUpState.value.personalTextFieldStates[SignUpInputTypes.MOBILE_NUMBER],
-                        signUpState.value.userTextFieldStates[SignUpInputTypes.USERNAME],
-                        signUpState.value.userTextFieldStates[SignUpInputTypes.PASSWORD],
-                        signUpState.value.userTextFieldStates[SignUpInputTypes.EMAIL],
-                        signUpState.value.userTextFieldStates[SignUpInputTypes.REAGENT_TOKEN]
+                        signUpState.value.personalTextFieldStates[SignUpInputTypes.FIRSTNAME].value,
+                        signUpState.value.personalTextFieldStates[SignUpInputTypes.LASTNAME].value,
+                        signUpState.value.personalTextFieldStates[SignUpInputTypes.PHONE_NUMBER].value,
+                        signUpState.value.personalTextFieldStates[SignUpInputTypes.MOBILE_NUMBER].value,
+                        signUpState.value.userTextFieldStates[SignUpInputTypes.USERNAME].value,
+                        signUpState.value.userTextFieldStates[SignUpInputTypes.PASSWORD].value,
+                        signUpState.value.userTextFieldStates[SignUpInputTypes.EMAIL].value,
+                        signUpState.value.userTextFieldStates[SignUpInputTypes.REAGENT_TOKEN].value
                     )
                 )
                 if (_signUpState.value.response.data?.statusCode == JSonStatusCode.DUPLICATE_USERNAME){

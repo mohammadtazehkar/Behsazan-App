@@ -21,11 +21,31 @@ class AppLocalDataSourceImpl(
         return appDAO.getUserToken()
     }
 
+    override suspend fun getUserTokenTypeFromDB(): String {
+        return appDAO.getUserTokenType()
+    }
+
     override suspend fun getUserIdFromDB(): Int {
         return appDAO.getUserId()
     }
 
     override suspend fun checkUserExist(): Boolean {
         return appDAO.hasUserData() > 0
+    }
+
+    override suspend fun getUserFirstNameFromDB(): String {
+        return appDAO.getUserFirstName()
+    }
+
+    override suspend fun getUserLastNameFromDB(): String {
+        return appDAO.getUserLastName()
+    }
+
+    override suspend fun deleteUserInfo() {
+        appDAO.deleteUserInfo()
+    }
+
+    override suspend fun deleteUserToken() {
+        appDAO.deleteUserToken()
     }
 }

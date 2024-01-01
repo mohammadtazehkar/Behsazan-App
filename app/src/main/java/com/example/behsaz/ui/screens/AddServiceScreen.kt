@@ -84,6 +84,7 @@ fun AddServiceScreen(
                         message = event.message.asString(context)
                     )
                 }
+                else -> {}
             }
         }
     }

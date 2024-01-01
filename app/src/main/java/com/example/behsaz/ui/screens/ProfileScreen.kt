@@ -29,18 +29,27 @@ import com.example.behsaz.ui.components.ProgressBarDialog
 import com.example.behsaz.ui.components.UserInfoContent
 import com.example.behsaz.ui.models.TextInputData
 import com.example.behsaz.utils.Resource
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
 
 @Composable
 fun ProfileScreen(
     profileViewModel: ProfileViewModel = hiltViewModel(),
-    onEditSubmitted: () -> Unit,
+    onExpiredToken: () -> Unit,
     onNavUp: () -> Unit
 ) {
 
     val context = LocalContext.current
-    val profileState = profileViewModel.profileState.value
+    var profileState = profileViewModel.profileState.value
     val snackbarHostState = remember { SnackbarHostState() }
+
+    if (profileState.isLoading) {
+        ProgressBarDialog(
+            onDismissRequest = {
+                profileViewModel.onEvent(ProfileEvent.UpdateLoading(false))
+            }
+        )
+    }
 
     LaunchedEffect(key1 = true) {
         profileViewModel.uiEventFlow.collectLatest { event ->
@@ -50,15 +59,49 @@ fun ProfileScreen(
                         message = event.message.asString(context)
                     )
                 }
+                is SignInUIEvent.ExpiredToken ->{
+                    snackbarHostState.showSnackbar(
+                        message = event.message.asString(context)
+                    )
+                    delay(500)  // the delay of 0.5 seconds
+                    onExpiredToken()
+                }
             }
         }
     }
-    if (profileState.isLoading) {
-        ProgressBarDialog(
-            onDismissRequest = {
+    LaunchedEffect(key1 = profileState.getProfileResponse) {
+        when (profileState.getProfileResponse) {
+            is Resource.Loading -> {
+                // Display loading UI
+                profileViewModel.onEvent(ProfileEvent.UpdateLoading(true))
+            }
+            is Resource.Success -> {
+                // Display success UI with data
+                profileViewModel.onEvent(ProfileEvent.UpdateLoading(false))
+                profileViewModel.onEvent(ProfileEvent.PrepareData(false))
+            }
+            is Resource.Error -> {
+                // Display error UI with message
                 profileViewModel.onEvent(ProfileEvent.UpdateLoading(false))
             }
-        )
+        }
+    }
+    LaunchedEffect(key1 = profileState.updateProfileResponse) {
+        when (profileState.updateProfileResponse) {
+            is Resource.Loading -> {
+                // Display loading UI
+                profileViewModel.onEvent(ProfileEvent.UpdateLoading(true))
+            }
+            is Resource.Success -> {
+                // Display success UI with data
+                profileViewModel.onEvent(ProfileEvent.PrepareData(true))
+                profileViewModel.onEvent(ProfileEvent.UpdateLoading(false))
+            }
+            is Resource.Error -> {
+                // Display error UI with message
+                profileViewModel.onEvent(ProfileEvent.UpdateLoading(false))
+            }
+        }
     }
 
     Scaffold(
@@ -160,42 +203,14 @@ fun ProfileScreen(
                 },
                 onSubmitted = {
                     profileViewModel.onEvent(
-                        ProfileEvent.UpdateClicked(onEditSubmitted)
+                        ProfileEvent.UpdateClicked{
+//                            profileViewModel.onEvent(ProfileEvent.PrepareData(true))
+                            profileViewModel.onEvent(ProfileEvent.ChangeEditState)
+                        }
                     )
                 },
 //                onNavigateToHome = onNavigateToHome
             )
         }
     )
-
-    when (profileState.getProfileResponse) {
-        is Resource.Loading -> {
-            // Display loading UI
-            profileViewModel.onEvent(ProfileEvent.UpdateLoading(true))
-        }
-        is Resource.Success -> {
-            // Display success UI with data
-            profileViewModel.onEvent(ProfileEvent.UpdateLoading(false))
-            profileViewModel.onEvent(ProfileEvent.PrepareData)
-        }
-        is Resource.Error -> {
-            // Display error UI with message
-            Log.i("mamali","error from profileScree ")
-
-            profileViewModel.onEvent(ProfileEvent.UpdateLoading(false))
-        }
-    }
-
-    when (profileState.updateProfileResponse) {
-        is Resource.Loading -> {
-            // Display loading UI
-        }
-        is Resource.Success -> {
-            // Display success UI with data
-        }
-        is Resource.Error -> {
-            // Display error UI with message
-        }
-    }
-
 }

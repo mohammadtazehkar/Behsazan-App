@@ -6,5 +6,7 @@ import com.example.behsaz.utils.Resource
 interface HomeRepository {
 
     suspend fun getHomeData(): Resource<APIHomeDataResponse>
+    suspend fun getUserFullName(): String
+
 
 }
