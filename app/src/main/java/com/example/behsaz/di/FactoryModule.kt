@@ -30,18 +30,4 @@ class FactoryModule {
 //    fun provideAddAddressViewModelFactory(factory: AddAddressViewModelFactory.Factory): AddAddressViewModelFactory.Factory {
 //        return factory
 //    }
-
-//    @Singleton
-//    @Provides
-//    fun provideAddServiceViewModelFactory(
-//        addMyServiceUseCase: AddMyServiceUseCase,
-//        getMyAddressListUseCase: GetMyAddressListUseCase,
-//        getCategoryListUseCase: GetCategoryListUseCase,
-//        categoryId: Int,
-//        categoryTitle: String
-//    ): AddServiceViewModelFactory {
-//        return AddServiceViewModelFactory(
-//            addMyServiceUseCase, getMyAddressListUseCase, getCategoryListUseCase, categoryId, categoryTitle
-//        )
-//    }
 }

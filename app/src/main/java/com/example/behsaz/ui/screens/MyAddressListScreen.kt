@@ -1,5 +1,6 @@
 package com.example.behsaz.ui.screens
 
+import android.util.Log
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.slideInVertically
@@ -24,8 +25,13 @@ import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -33,6 +39,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -43,16 +50,22 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.behsaz.R
 import com.example.behsaz.data.models.myAddress.MyAddressListData
+import com.example.behsaz.presentation.events.MessageListEvent
 import com.example.behsaz.presentation.events.MyAddressListEvent
 import com.example.behsaz.presentation.events.MyServiceListEvent
+import com.example.behsaz.presentation.events.ProfileEvent
 import com.example.behsaz.presentation.viewmodels.MyAddressListViewModel
 import com.example.behsaz.presentation.viewmodels.SharedViewModel
+import com.example.behsaz.ui.components.AppErrorSnackBar
 import com.example.behsaz.ui.components.AppTopAppBar
 import com.example.behsaz.ui.components.CardColumnMediumCorner
 import com.example.behsaz.ui.components.EmptyView
 import com.example.behsaz.ui.components.ProgressBarDialog
 import com.example.behsaz.ui.components.TextTitleSmall
+import com.example.behsaz.utils.JSonStatusCode
 import com.example.behsaz.utils.Resource
+import com.example.behsaz.utils.UIText
+import kotlinx.coroutines.delay
 
 @Composable
 fun MyAddressListScreen(
@@ -61,10 +74,12 @@ fun MyAddressListScreen(
     onAddAddressClick: () -> Unit,
     onEditAddressClick: (Int, String, String, Double, Double) -> Unit,
     onShowLocation: () -> Unit,
+    onExpiredToken: ()-> Unit,
     onNavUp: () -> Unit
 ) {
+    val context = LocalContext.current
     val myAddressListState = myAddressListViewModel.myAddressListState.value
-
+    val snackbarHostState = remember { SnackbarHostState() }
     // Nested scroll for control FAB
     val nestedScrollConnection = remember {
         object : NestedScrollConnection {
@@ -91,6 +106,68 @@ fun MyAddressListScreen(
         )
     }
 
+    LaunchedEffect(key1 = myAddressListState.response) {
+        when (myAddressListState.response) {
+            is Resource.Loading -> {
+                // Display loading UI
+                myAddressListViewModel.onEvent(MyAddressListEvent.UpdateLoading(true))
+            }
+            is Resource.Success -> {
+                // Display success UI with data
+                myAddressListViewModel.onEvent(MyAddressListEvent.UpdateLoading(false))
+                if (myAddressListState.response.data?.statusCode == JSonStatusCode.SUCCESS) {
+                    myAddressListViewModel.onEvent(MyAddressListEvent.PrepareList)
+                }
+
+            }
+            is Resource.Error -> {
+                // Display error UI with message
+                myAddressListViewModel.onEvent(MyAddressListEvent.UpdateLoading(false))
+                when (myAddressListState.response.data?.statusCode) {
+                    JSonStatusCode.EXPIRED_TOKEN -> {
+                        snackbarHostState.showSnackbar(
+                            message = UIText.StringResource(R.string.expired_token).asString(context)
+                        )
+                        delay(500)  // the delay of 0.5 seconds
+                        onExpiredToken()
+                    }
+                    JSonStatusCode.INTERNET_CONNECTION -> {
+                        val result = snackbarHostState
+                            .showSnackbar(
+                                message = UIText.StringResource(R.string.not_connection_internet).asString(context),
+                                actionLabel = UIText.StringResource(R.string.trye_again).asString(context),
+                                duration = SnackbarDuration.Indefinite
+                            )
+                        when (result) {
+                            SnackbarResult.ActionPerformed -> {
+                                myAddressListViewModel.onEvent(MyAddressListEvent.GetListFromServer)
+                            }
+                            SnackbarResult.Dismissed -> {
+                                /* Handle snackbar dismissed */
+                            }
+                        }
+                    }
+                    JSonStatusCode.SERVER_CONNECTION -> {
+                        val result = snackbarHostState
+                            .showSnackbar(
+                                message = UIText.StringResource(R.string.server_connection_error).asString(context),
+                                actionLabel = UIText.StringResource(R.string.trye_again).asString(context),
+                                duration = SnackbarDuration.Indefinite
+                            )
+                        when (result) {
+                            SnackbarResult.ActionPerformed -> {
+                                myAddressListViewModel.onEvent(MyAddressListEvent.GetListFromServer)
+                            }
+                            SnackbarResult.Dismissed -> {
+                                /* Handle snackbar dismissed */
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     Scaffold(
         floatingActionButton = {
             AnimatedVisibility(
@@ -109,6 +186,11 @@ fun MyAddressListScreen(
             }
         },
         floatingActionButtonPosition = FabPosition.End,
+        snackbarHost = {
+            SnackbarHost(snackbarHostState) {
+                AppErrorSnackBar(it)
+            }
+        },
         topBar = {
             AppTopAppBar(
                 title = stringResource(id = R.string.my_addresses),
@@ -174,24 +256,6 @@ fun MyAddressListScreen(
         // your action
         sharedViewModel.selectLocation(0.00,0.00)
         onNavUp()
-    }
-
-
-    when (myAddressListState.response) {
-        is Resource.Loading -> {
-            // Display loading UI
-            myAddressListViewModel.onEvent(MyAddressListEvent.UpdateLoading(true))
-        }
-        is Resource.Success -> {
-            // Display success UI with data
-            myAddressListViewModel.onEvent(MyAddressListEvent.UpdateLoading(false))
-            myAddressListViewModel.onEvent(MyAddressListEvent.PrepareList)
-
-        }
-        is Resource.Error -> {
-            // Display error UI with message
-            myAddressListViewModel.onEvent(MyAddressListEvent.UpdateLoading(false))
-        }
     }
 }
 

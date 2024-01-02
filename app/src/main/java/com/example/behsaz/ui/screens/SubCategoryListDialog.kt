@@ -14,14 +14,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import com.example.behsaz.data.models.home.CategoryListData
+import com.example.behsaz.data.models.myService.SubCategoryListData
 import com.example.behsaz.ui.components.CardMediumCorner
 import com.example.behsaz.ui.components.TextTitleMedium
 
 @Composable
-fun CategoryListDialog(
-    categories: List<CategoryListData>,
+fun SubCategoryListDialog(
+    subCategories: List<SubCategoryListData>,
     onDismissRequest: () -> Unit,
-    onConfirmation: (CategoryListData) -> Unit
+    onConfirmation: (SubCategoryListData) -> Unit
 ){
     Dialog(
         onDismissRequest = { onDismissRequest() },
@@ -31,10 +32,10 @@ fun CategoryListDialog(
                 modifier = Modifier
                     .background(MaterialTheme.colorScheme.background)
             ) {
-                items(categories.size) { index ->
+                items(subCategories.size) { index ->
                     CategoryListDialogItem(
-                        item = categories[index],
-                        isLastItem = index == categories.size - 1,
+                        item = subCategories[index],
+                        isLastItem = index == subCategories.size - 1,
                         onItemClick = onConfirmation
                     )
                 }
@@ -45,9 +46,9 @@ fun CategoryListDialog(
 
 @Composable
 fun CategoryListDialogItem(
-    item: CategoryListData,
+    item: SubCategoryListData,
     isLastItem: Boolean,
-    onItemClick: (CategoryListData) -> Unit
+    onItemClick: (SubCategoryListData) -> Unit
 ){
     Column(
         modifier = Modifier.clickable {
@@ -66,5 +67,4 @@ fun CategoryListDialogItem(
     }
 
 }
-//data class CategoryListData(val id : Int, val title: String)
 

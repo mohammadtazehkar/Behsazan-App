@@ -1,6 +1,7 @@
 package com.example.behsaz.ui.screens
 
 import android.graphics.Rect
+import android.util.Log
 import android.view.ViewTreeObserver
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
@@ -21,8 +22,10 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -41,6 +44,7 @@ import com.example.behsaz.R
 import com.example.behsaz.presentation.constants.AppKeyboard
 import com.example.behsaz.presentation.constants.SignInInputTypes.PASSWORD
 import com.example.behsaz.presentation.constants.SignInInputTypes.USERNAME
+import com.example.behsaz.presentation.events.ProfileEvent
 import com.example.behsaz.ui.components.AppErrorSnackBar
 import com.example.behsaz.ui.components.AppTopAppBar
 import com.example.behsaz.ui.components.TextInputItem
@@ -52,7 +56,10 @@ import com.example.behsaz.presentation.events.SignInUIEvent
 import com.example.behsaz.presentation.viewmodels.SignInViewModel
 import com.example.behsaz.ui.components.ProgressBarDialog
 import com.example.behsaz.ui.models.TextInputData
+import com.example.behsaz.utils.JSonStatusCode
 import com.example.behsaz.utils.Resource
+import com.example.behsaz.utils.UIText
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
 
 
@@ -75,10 +82,36 @@ fun SignInScreen(
                         message = event.message.asString(context)
                     )
                 }
-                else -> {}
             }
         }
     }
+    LaunchedEffect(key1 = signInState.response) {
+        when (signInState.response) {
+            is Resource.Loading -> {
+                // Display loading UI
+                signInViewModel.onEvent(SignInEvent.UpdateLoading(true))
+
+            }
+            is Resource.Success -> {
+                // Display success UI with data
+                signInViewModel.onEvent(SignInEvent.UpdateLoading(false))
+            }
+            is Resource.Error -> {
+                // Display error UI with message
+                signInViewModel.onEvent(SignInEvent.UpdateLoading(false))
+                when (signInState.response.data?.statusCode) {
+                    JSonStatusCode.INTERNET_CONNECTION -> {
+                        snackbarHostState.showSnackbar(message = UIText.StringResource(R.string.not_connection_internet).asString(context))
+                    }
+                    JSonStatusCode.SERVER_CONNECTION -> {
+                        snackbarHostState.showSnackbar(message = UIText.StringResource(R.string.server_connection_error).asString(context))
+                    }
+                }
+
+            }
+        }
+    }
+
     if (signInState.isLoading) {
         ProgressBarDialog(
             onDismissRequest = {
@@ -90,7 +123,7 @@ fun SignInScreen(
     Scaffold(
         snackbarHost = {
             SnackbarHost(snackbarHostState) {
-                AppErrorSnackBar(it.visuals.message)
+                AppErrorSnackBar(it)
             }
         },
         topBar = {
@@ -171,22 +204,6 @@ fun SignInScreen(
         }
     )
 
-    when (signInState.response) {
-        is Resource.Loading -> {
-            // Display loading UI
-            signInViewModel.onEvent(SignInEvent.UpdateLoading(true))
-
-        }
-        is Resource.Success -> {
-            // Display success UI with data
-            signInViewModel.onEvent(SignInEvent.UpdateLoading(false))
-        }
-        is Resource.Error -> {
-            // Display error UI with message
-            signInViewModel.onEvent(SignInEvent.UpdateLoading(false))
-
-        }
-    }
 }
 
 @Composable

@@ -9,6 +9,6 @@ data class APIGetRulesResponse(
     @SerializedName("message")
     val message: String,
     @SerializedName("data")
-    val data: String
+    val data: String?
 
 )

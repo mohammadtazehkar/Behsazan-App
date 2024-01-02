@@ -27,18 +27,16 @@ class MyAddressRepositoryImpl(
                     if (response.code() == JSonStatusCode.EXPIRED_TOKEN){
                         appLocalDataSource.deleteUserInfo()
                         appLocalDataSource.deleteUserToken()
-                        Resource.Error("expired Token",
-                            APIMyAddressListResponse(response.code(),"expired Token", null)
-                        )
+                        Resource.Error("expired Token", APIMyAddressListResponse(response.code(),"expired Token", null))
                     }else{
-                        Resource.Error("An error occurred")
+                        Resource.Error("An error occurred",APIMyAddressListResponse(JSonStatusCode.SERVER_CONNECTION,"An error occurred",null))
                     }
                 }
             } catch (e: Exception) {
-                Resource.Error(e.message ?: "An error occurred")
+                Resource.Error(e.message ?: "An error occurred",APIMyAddressListResponse(JSonStatusCode.SERVER_CONNECTION,"An error occurred",null))
             }
         } else {
-            Resource.Error("No internet connection")
+            Resource.Error("No internet connection", APIMyAddressListResponse(JSonStatusCode.INTERNET_CONNECTION, "No internet connection",null))
         }
     }
 
@@ -59,14 +57,14 @@ class MyAddressRepositoryImpl(
                         appLocalDataSource.deleteUserToken()
                         Resource.Error("expired Token",APIAddAddressResponse(response.code(),"expired Token"))
                     }else{
-                        Resource.Error("An error occurred")
+                        Resource.Error("An error occurred",APIAddAddressResponse(JSonStatusCode.SERVER_CONNECTION,"An error occurred"))
                     }
                 }
             } catch (e: Exception) {
-                Resource.Error(e.message ?: "An error occurred")
+                Resource.Error(e.message ?: "An error occurred",APIAddAddressResponse(JSonStatusCode.SERVER_CONNECTION,"An error occurred"))
             }
         } else {
-            Resource.Error("No internet connection")
+            Resource.Error("No internet connection", APIAddAddressResponse(JSonStatusCode.INTERNET_CONNECTION, "No internet connection"))
         }
     }
 
@@ -88,14 +86,14 @@ class MyAddressRepositoryImpl(
                         appLocalDataSource.deleteUserToken()
                         Resource.Error("expired Token",APIAddAddressResponse(response.code(),"expired Token"))
                     }else{
-                        Resource.Error("An error occurred")
+                        Resource.Error("An error occurred",APIAddAddressResponse(JSonStatusCode.SERVER_CONNECTION,"An error occurred"))
                     }
                 }
             } catch (e: Exception) {
-                Resource.Error(e.message ?: "An error occurred")
+                Resource.Error(e.message ?: "An error occurred",APIAddAddressResponse(JSonStatusCode.SERVER_CONNECTION,"An error occurred"))
             }
         } else {
-            Resource.Error("No internet connection")
+            Resource.Error("No internet connection", APIAddAddressResponse(JSonStatusCode.INTERNET_CONNECTION, "No internet connection"))
         }
     }
 }

@@ -1,22 +1,18 @@
 package com.example.behsaz.presentation.viewmodels
 
-import android.util.Log
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.example.behsaz.R
-import com.example.behsaz.domain.usecase.AddMyAddressUseCase
 import com.example.behsaz.domain.usecase.AddMyServiceUseCase
-import com.example.behsaz.domain.usecase.GetCategoryListUseCase
 import com.example.behsaz.domain.usecase.GetMyAddressListUseCase
+import com.example.behsaz.domain.usecase.GetSubCategoryListUseCase
 import com.example.behsaz.utils.UIText
 import com.example.behsaz.presentation.events.AddServiceEvent
 import com.example.behsaz.presentation.events.SignInUIEvent
 import com.example.behsaz.presentation.states.AddServiceState
-import com.example.behsaz.utils.ArgumentKeys
 import com.example.behsaz.utils.ArgumentKeys.CATEGORY_ID
 import com.example.behsaz.utils.ArgumentKeys.CATEGORY_TITLE
 import com.example.behsaz.utils.JSonStatusCode
@@ -25,24 +21,18 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
-import java.lang.IllegalArgumentException
 import javax.inject.Inject
 
 @HiltViewModel
 class AddServiceViewModel @Inject constructor(
     private val addMyServiceUseCase: AddMyServiceUseCase,
     private val getMyAddressListUseCase: GetMyAddressListUseCase,
-    private val getCategoryListUseCase: GetCategoryListUseCase,
+    private val getSubCategoryListUseCase: GetSubCategoryListUseCase,
     private val savedStateHandle: SavedStateHandle,
-//    categoryId: Int,
-//    categoryTitle: String
 ) : ViewModel() {
 
     private val _addServiceState = mutableStateOf(
         AddServiceState(
-//            categoryId = categoryId,
-//            categoryTitle = UIText.StringResource(resId = R.string.select_category),
-//            categoryTitle = categoryTitle,
             categoryId = savedStateHandle.get<Int>(CATEGORY_ID)!!,
             categoryTitle = savedStateHandle.get<String>(CATEGORY_TITLE)!!,
             address = "",
@@ -50,231 +40,13 @@ class AddServiceViewModel @Inject constructor(
             longitude = 0.00,
             myAddressId = 0,
             description = "",
-            myAddressListState = mutableListOf(
-//                MyAddressListData(
-//                    1,
-//                    "خانه",
-//                    "اردبیل ، خ امام ، جهازی ، پشت پارک آرتا ، محله حاج حسینعلی ، روبروی مسجد",
-//                    38.2543445,
-//                    48.3033085
-//                ),
-//                MyAddressListData(
-//                    2,
-//                    "شرکت",
-//                    "اردبیل ، پا باغمیشه به سمت سعدی ، نرسیده به کبابی قربان ، جنب فرش فروشی پدر ، ساختمان تجاری خدماتی میرداماد ، طبقه 5 واحد 7",
-//                    38.246822233000074,
-//                    48.278527353327554,
-//                ),
-//                MyAddressListData(
-//                    3,
-//                    "خانه",
-//                    "اردبیل ، خ امام ، جهازی ، پشت پارک آرتا ، محله حاج حسینعلی ، روبروی مسجد",
-//                    38.2543445,
-//                    48.3033085
-//                ),
-//                MyAddressListData(
-//                    4,
-//                    "شرکت",
-//                    "اردبیل ، پا باغمیشه به سمت سعدی ، نرسیده به کبابی قربان ، جنب فرش فروشی پدر ، ساختمان تجاری خدماتی میرداماد ، طبقه 5 واحد 7",
-//                    38.246822233000074,
-//                    48.278527353327554,
-//                ),
-//                MyAddressListData(
-//                    5,
-//                    "خانه",
-//                    "اردبیل ، خ امام ، جهازی ، پشت پارک آرتا ، محله حاج حسینعلی ، روبروی مسجد",
-//                    38.2543445,
-//                    48.3033085
-//                ),
-//                MyAddressListData(
-//                    6,
-//                    "شرکت",
-//                    "اردبیل ، پا باغمیشه به سمت سعدی ، نرسیده به کبابی قربان ، جنب فرش فروشی پدر ، ساختمان تجاری خدماتی میرداماد ، طبقه 5 واحد 7",
-//                    38.246822233000074,
-//                    48.278527353327554,
-//                ),
-//                MyAddressListData(
-//                    7,
-//                    "خانه",
-//                    "اردبیل ، خ امام ، جهازی ، پشت پارک آرتا ، محله حاج حسینعلی ، روبروی مسجد",
-//                    38.2543445,
-//                    48.3033085
-//                ),
-//                MyAddressListData(
-//                    8,
-//                    "شرکت",
-//                    "اردبیل ، پا باغمیشه به سمت سعدی ، نرسیده به کبابی قربان ، جنب فرش فروشی پدر ، ساختمان تجاری خدماتی میرداماد ، طبقه 5 واحد 7",
-//                    38.246822233000074,
-//                    48.278527353327554
-//                ),
-//                MyAddressListData(
-//                    9,
-//                    "خانه",
-//                    "اردبیل ، خ امام ، جهازی ، پشت پارک آرتا ، محله حاج حسینعلی ، روبروی مسجد",
-//                    38.2543445,
-//                    48.3033085
-//                ),
-//                MyAddressListData(
-//                    10,
-//                    "شرکت",
-//                    "اردبیل ، پا باغمیشه به سمت سعدی ، نرسیده به کبابی قربان ، جنب فرش فروشی پدر ، ساختمان تجاری خدماتی میرداماد ، طبقه 5 واحد 7",
-//                    38.246822233000074,
-//                    48.278527353327554
-//                ),
-//                MyAddressListData(
-//                    11,
-//                    "خانه",
-//                    "اردبیل ، خ امام ، جهازی ، پشت پارک آرتا ، محله حاج حسینعلی ، روبروی مسجد",
-//                    38.2543445,
-//                    48.3033085
-//                ),
-//                MyAddressListData(
-//                    12,
-//                    "شرکت",
-//                    "اردبیل ، پا باغمیشه به سمت سعدی ، نرسیده به کبابی قربان ، جنب فرش فروشی پدر ، ساختمان تجاری خدماتی میرداماد ، طبقه 5 واحد 7",
-//                    38.246822233000074,
-//                    48.278527353327554
-//                ),
-//                MyAddressListData(
-//                    13,
-//                    "خانه",
-//                    "اردبیل ، خ امام ، جهازی ، پشت پارک آرتا ، محله حاج حسینعلی ، روبروی مسجد",
-//                    38.2543445,
-//                    48.3033085
-//                ),
-//                MyAddressListData(
-//                    14,
-//                    "شرکت",
-//                    "اردبیل ، پا باغمیشه به سمت سعدی ، نرسیده به کبابی قربان ، جنب فرش فروشی پدر ، ساختمان تجاری خدماتی میرداماد ، طبقه 5 واحد 7",
-//                    38.246822233000074,
-//                    48.278527353327554
-//                ),
-//                MyAddressListData(
-//                    15,
-//                    "خانه",
-//                    "اردبیل ، خ امام ، جهازی ، پشت پارک آرتا ، محله حاج حسینعلی ، روبروی مسجد",
-//                    38.2543445,
-//                    48.3033085
-//                ),
-//                MyAddressListData(
-//                    16,
-//                    "شرکت",
-//                    "اردبیل ، پا باغمیشه به سمت سعدی ، نرسیده به کبابی قربان ، جنب فرش فروشی پدر ، ساختمان تجاری خدماتی میرداماد ، طبقه 5 واحد 7",
-//                    38.246822233000074,
-//                    48.278527353327554
-//                ),
-//                MyAddressListData(
-//                    17,
-//                    "خانه",
-//                    "اردبیل ، خ امام ، جهازی ، پشت پارک آرتا ، محله حاج حسینعلی ، روبروی مسجد",
-//                    38.2543445,
-//                    48.3033085
-//                ),
-//                MyAddressListData(
-//                    18,
-//                    "شرکت",
-//                    "اردبیل ، پا باغمیشه به سمت سعدی ، نرسیده به کبابی قربان ، جنب فرش فروشی پدر ، ساختمان تجاری خدماتی میرداماد ، طبقه 5 واحد 7",
-//                    38.246822233000074,
-//                    48.278527353327554
-//                ),
-//                MyAddressListData(
-//                    19,
-//                    "خانه",
-//                    "اردبیل ، خ امام ، جهازی ، پشت پارک آرتا ، محله حاج حسینعلی ، روبروی مسجد",
-//                    38.2543445,
-//                    48.3033085
-//                ),
-//                MyAddressListData(
-//                    20,
-//                    "شرکت",
-//                    "اردبیل ، پا باغمیشه به سمت سعدی ، نرسیده به کبابی قربان ، جنب فرش فروشی پدر ، ساختمان تجاری خدماتی میرداماد ، طبقه 5 واحد 7",
-//                    38.246822233000074,
-//                    48.278527353327554
-//                ),
-//                MyAddressListData(
-//                    21,
-//                    "خانه",
-//                    "اردبیل ، خ امام ، جهازی ، پشت پارک آرتا ، محله حاج حسینعلی ، روبروی مسجد",
-//                    38.2543445,
-//                    48.3033085
-//                ),
-//                MyAddressListData(
-//                    22,
-//                    "شرکت",
-//                    "اردبیل ، پا باغمیشه به سمت سعدی ، نرسیده به کبابی قربان ، جنب فرش فروشی پدر ، ساختمان تجاری خدماتی میرداماد ، طبقه 5 واحد 7",
-//                    38.246822233000074,
-//                    48.278527353327554
-//                ),
-//                MyAddressListData(
-//                    23,
-//                    "خانه",
-//                    "اردبیل ، خ امام ، جهازی ، پشت پارک آرتا ، محله حاج حسینعلی ، روبروی مسجد",
-//                    38.2543445,
-//                    48.3033085
-//                ),
-//                MyAddressListData(
-//                    24,
-//                    "شرکت",
-//                    "اردبیل ، پا باغمیشه به سمت سعدی ، نرسیده به کبابی قربان ، جنب فرش فروشی پدر ، ساختمان تجاری خدماتی میرداماد ، طبقه 5 واحد 7",
-//                    38.246822233000074,
-//                    48.278527353327554
-//                ),
-//                MyAddressListData(
-//                    25,
-//                    "خانه",
-//                    "اردبیل ، خ امام ، جهازی ، پشت پارک آرتا ، محله حاج حسینعلی ، روبروی مسجد",
-//                    38.2543445,
-//                    48.3033085
-//                ),
-//                MyAddressListData(
-//                    26,
-//                    "شرکت",
-//                    "اردبیل ، پا باغمیشه به سمت سعدی ، نرسیده به کبابی قربان ، جنب فرش فروشی پدر ، ساختمان تجاری خدماتی میرداماد ، طبقه 5 واحد 7",
-//                    38.246822233000074,
-//                    48.278527353327554
-//                ),
-//                MyAddressListData(
-//                    27,
-//                    "خانه",
-//                    "اردبیل ، خ امام ، جهازی ، پشت پارک آرتا ، محله حاج حسینعلی ، روبروی مسجد",
-//                    38.2543445,
-//                    48.3033085
-//                ),
-//                MyAddressListData(
-//                    28,
-//                    "شرکت",
-//                    "اردبیل ، پا باغمیشه به سمت سعدی ، نرسیده به کبابی قربان ، جنب فرش فروشی پدر ، ساختمان تجاری خدماتی میرداماد ، طبقه 5 واحد 7",
-//                    38.246822233000074,
-//                    48.278527353327554
-//                ),
-//                MyAddressListData(
-//                    29,
-//                    "خانه",
-//                    "اردبیل ، خ امام ، جهازی ، پشت پارک آرتا ، محله حاج حسینعلی ، روبروی مسجد",
-//                    38.2543445,
-//                    48.3033085
-//                ),
-//                MyAddressListData(
-//                    30,
-//                    "شرکت",
-//                    "اردبیل ، پا باغمیشه به سمت سعدی ، نرسیده به کبابی قربان ، جنب فرش فروشی پدر ، ساختمان تجاری خدماتی میرداماد ، طبقه 5 واحد 7",
-//                    38.246822233000074,
-//                    48.278527353327554
-//                )
-            ),
-            categoryListState = mutableListOf(
-//                CategoryListData(1,"نظافت ساختمان"),
-//                CategoryListData(2,"معماری ساختمان"),
-//                CategoryListData(3,"سیم کشی ساختمان"),
-//                CategoryListData(4,"تاسیسات ساختمان"),
-//                CategoryListData(5,"خدمات کامپیوتری"),
-//                CategoryListData(6,"اسباب کشی")
-            ),
+            myAddressListState = mutableListOf(),
+            subCategoryListState = mutableListOf(),
             myAddressListDialogVisible = false,
-            categoryListDialogVisible = false,
+            subCategoryListDialogVisible = false,
             responseAddService = Resource.Loading(),
             responseMyAddressList = Resource.Loading(),
-            responseCategoryList = Resource.Loading()
+            responseSubCategoryList = Resource.Loading()
         )
     )
     val addServiceState: State<AddServiceState> = _addServiceState
@@ -284,12 +56,11 @@ class AddServiceViewModel @Inject constructor(
 
     fun onEvent(event: AddServiceEvent) {
         when (event) {
-            is AddServiceEvent.SelectCategory -> {
+            is AddServiceEvent.SelectSubCategory -> {
                 _addServiceState.value = _addServiceState.value.copy(
-                    categoryId = event.categoryId,
-//                    categoryTitle = UIText.DynamicString(event.categoryTitle),
-                    categoryTitle = event.categoryTitle,
-                    categoryListDialogVisible = false
+                    subCategoryId = event.subCategoryId,
+                    subCategoryTitle = event.subCategoryTitle,
+                    subCategoryListDialogVisible = false
                 )
             }
             is AddServiceEvent.UpdateAddressTextFieldState -> {
@@ -316,9 +87,9 @@ class AddServiceViewModel @Inject constructor(
                     myAddressListDialogVisible = !addServiceState.value.myAddressListDialogVisible
                 )
             }
-            is AddServiceEvent.UpdateCategoryListDialog -> {
+            is AddServiceEvent.UpdateSubCategoryListDialog -> {
                 _addServiceState.value = _addServiceState.value.copy(
-                    categoryListDialogVisible = !addServiceState.value.categoryListDialogVisible
+                    subCategoryListDialogVisible = !addServiceState.value.subCategoryListDialogVisible
                 )
             }
             is AddServiceEvent.AddServiceClicked -> {
@@ -333,16 +104,21 @@ class AddServiceViewModel @Inject constructor(
                     myAddressListState = addServiceState.value.responseMyAddressList.data?.data!!
                 )
             }
-            is AddServiceEvent.PrepareCategoryList ->{
+            is AddServiceEvent.PrepareSubCategoryList ->{
                 _addServiceState.value = addServiceState.value.copy(
-                    categoryListState = addServiceState.value.responseCategoryList.data?.data!!
+                    subCategoryListState = addServiceState.value.responseSubCategoryList.data?.data!!
                 )
             }
             is AddServiceEvent.GetMyAddressList ->{
                 getMyAddressList()
             }
-            is AddServiceEvent.GetCategoryList ->{
-                getCategoryList()
+            is AddServiceEvent.GetSubCategoryList ->{
+                getSubCategoryList()
+            }
+            is AddServiceEvent.UpdateLoading -> {
+                _addServiceState.value = addServiceState.value.copy(
+                    isLoading = event.status
+                )
             }
         }
     }
@@ -429,26 +205,11 @@ class AddServiceViewModel @Inject constructor(
         }
     }
 
-    private fun getCategoryList(){
+    private fun getSubCategoryList(){
         viewModelScope.launch {
             _addServiceState.value = addServiceState.value.copy(
-                responseCategoryList = getCategoryListUseCase.execute(addServiceState.value.categoryId.toString())
+                responseSubCategoryList = getSubCategoryListUseCase.execute(addServiceState.value.categoryId.toString())
             )
         }
     }
 }
-
-
-//class AddServiceViewModelFactory(
-//    private val addMyServiceUseCase: AddMyServiceUseCase,
-//    private val getMyAddressListUseCase: GetMyAddressListUseCase,
-//    private val getCategoryListUseCase: GetCategoryListUseCase,
-//    private val categoryId : Int,
-//    private val categoryTitle : String) : ViewModelProvider.Factory {
-//    override fun <T : ViewModel> create(modelClass: Class<T>): T {
-//        if (modelClass.isAssignableFrom(AddServiceViewModel::class.java)){
-//            return AddServiceViewModel(addMyServiceUseCase,getMyAddressListUseCase,getCategoryListUseCase,categoryId,categoryTitle) as T
-//        }
-//        throw IllegalArgumentException("Unknown View Model Class")
-//    }
-//}

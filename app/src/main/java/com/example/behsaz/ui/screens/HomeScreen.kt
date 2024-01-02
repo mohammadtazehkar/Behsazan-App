@@ -1,5 +1,6 @@
 package com.example.behsaz.ui.screens
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -18,9 +19,14 @@ import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -32,15 +38,18 @@ import coil.compose.AsyncImage
 import com.example.behsaz.R
 import com.example.behsaz.data.models.home.CategoryListData
 import com.example.behsaz.presentation.events.HomeEvent
+import com.example.behsaz.presentation.events.ProfileEvent
 import com.example.behsaz.presentation.viewmodels.HomeViewModel
 import com.example.behsaz.ui.components.AppBannerPager
 import com.example.behsaz.ui.components.AppDrawer
+import com.example.behsaz.ui.components.AppErrorSnackBar
 import com.example.behsaz.ui.components.AppTopAppBar
 import com.example.behsaz.ui.components.CardColumnMediumCorner
 import com.example.behsaz.ui.components.EmptyView
 import com.example.behsaz.ui.components.ProgressBarDialog
 import com.example.behsaz.ui.components.TextTitleMedium
 import com.example.behsaz.utils.Destinations
+import com.example.behsaz.utils.JSonStatusCode
 import com.example.behsaz.utils.Resource
 import com.example.behsaz.utils.ServerConstants.IMAGE_URL
 import com.example.behsaz.utils.UIText
@@ -51,12 +60,14 @@ import kotlinx.coroutines.launch
 fun HomeScreen(
     homeViewModel: HomeViewModel = hiltViewModel(),
     onNavigateToAddService: (Int, String) -> Unit,
+    onLogoutCompleted: () -> Unit,
     onDrawerItemClick: (String) -> Unit
 ) {
     val context = LocalContext.current
     val homeState = homeViewModel.homeState.value
     val scope = rememberCoroutineScope()
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Open)
+    val snackbarHostState = remember { SnackbarHostState() }
 
 
     LaunchedEffect(key1 = true) {
@@ -69,14 +80,60 @@ fun HomeScreen(
                 // Display loading UI
                 homeViewModel.onEvent(HomeEvent.UpdateLoading(true))
             }
+
             is Resource.Success -> {
                 // Display success UI with data
                 homeViewModel.onEvent(HomeEvent.UpdateLoading(false))
-                homeViewModel.onEvent(HomeEvent.PrepareData)
+                if (homeState.response.data?.statusCode == JSonStatusCode.SUCCESS) {
+                    homeViewModel.onEvent(HomeEvent.PrepareData)
+                }
             }
+
             is Resource.Error -> {
                 // Display error UI with message
                 homeViewModel.onEvent(HomeEvent.UpdateLoading(false))
+                when (homeState.response.data?.statusCode) {
+                    JSonStatusCode.INTERNET_CONNECTION -> {
+                        val result = snackbarHostState
+                            .showSnackbar(
+                                message = UIText.StringResource(R.string.not_connection_internet)
+                                    .asString(context),
+                                actionLabel = UIText.StringResource(R.string.trye_again)
+                                    .asString(context),
+                                duration = SnackbarDuration.Indefinite
+                            )
+                        when (result) {
+                            SnackbarResult.ActionPerformed -> {
+                                homeViewModel.onEvent(HomeEvent.GetHomeData)
+                            }
+
+                            SnackbarResult.Dismissed -> {
+                                /* Handle snackbar dismissed */
+                                Log.i("mamali", "ssss")
+                            }
+                        }
+                    }
+
+                    JSonStatusCode.SERVER_CONNECTION -> {
+                        val result = snackbarHostState
+                            .showSnackbar(
+                                message = UIText.StringResource(R.string.server_connection_error)
+                                    .asString(context),
+                                actionLabel = UIText.StringResource(R.string.trye_again)
+                                    .asString(context),
+                                duration = SnackbarDuration.Indefinite
+                            )
+                        when (result) {
+                            SnackbarResult.ActionPerformed -> {
+                                homeViewModel.onEvent(HomeEvent.GetHomeData)
+                            }
+
+                            SnackbarResult.Dismissed -> {
+                                /* Handle snackbar dismissed */
+                            }
+                        }
+                    }
+                }
             }
         }
     }
@@ -87,8 +144,10 @@ fun HomeScreen(
                 homeViewModel.onEvent(HomeEvent.UpdateLogoutDialog)
             },
             onConfirmation = {
+                homeViewModel.onEvent(HomeEvent.DoLogout(
+                    onLogoutComplete = onLogoutCompleted
+                ))
                 homeViewModel.onEvent(HomeEvent.UpdateLogoutDialog)
-                /*TODO doLogout*/
             }
         )
     }
@@ -102,9 +161,9 @@ fun HomeScreen(
 
     ModalNavigationDrawer(
         drawerContent = {
-            AppDrawer (
+            AppDrawer(
                 fullName = homeState.fullName,
-            ){ route ->
+            ) { route ->
                 if (route == Destinations.LOG_OUT_SCREEN) {
                     homeViewModel.onEvent(HomeEvent.UpdateLogoutDialog)
                 } else {
@@ -117,19 +176,31 @@ fun HomeScreen(
         },
         drawerState = drawerState
     ) {
-        Scaffold { paddingValues ->
+        Scaffold(
+            topBar = {
+                AppTopAppBar(
+                    title = stringResource(id = R.string.app_name),
+                    isMenuVisible = true,
+                    onOpenDrawer = {
+                        scope.launch {
+                            drawerState.open()
+                        }
+                    },
+                )
+            },
+            snackbarHost = {
+                SnackbarHost(snackbarHostState) {
+                    AppErrorSnackBar(it)
+                }
+            },
+        ) { paddingValues ->
             HomeContent(
                 modifier = Modifier.padding(paddingValues),
                 imageList = homeState.imageList,
                 categoryList = homeState.categoryListState,
-                onDrawerOpen = {
-                    scope.launch {
-                        drawerState.open()
-                    }
-                },
-                onServiceItemClick = {item ->
+                onServiceItemClick = { item ->
 //                    onNavigateToAddService(item.id,item.title.asString(context))
-                    onNavigateToAddService(item.id,item.title)
+                    onNavigateToAddService(item.id, item.title)
                 }
             )
         }
@@ -141,10 +212,9 @@ fun HomeScreen(
 fun HomeContent(
     modifier: Modifier = Modifier,
 //    imageList : List<SlideListData>,
-    imageList : List<String>,
+    imageList: List<String>,
     categoryList: List<CategoryListData>,
     onServiceItemClick: (CategoryListData) -> Unit,
-    onDrawerOpen: () -> Unit
 ) {
 
     Column(
@@ -152,11 +222,6 @@ fun HomeContent(
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
     ) {
-        AppTopAppBar(
-            title = stringResource(id = R.string.app_name),
-            isMenuVisible = true,
-            onOpenDrawer = onDrawerOpen,
-        )
         Spacer(modifier = Modifier.height(16.dp))
         AppBannerPager(
             modifier = Modifier.weight(0.3f),
@@ -172,9 +237,8 @@ fun HomeContent(
                     items = categoryList,
                     onServiceItemClick = onServiceItemClick
                 )
-            }
-            else{
-                Column (
+            } else {
+                Column(
                     modifier = Modifier.fillMaxHeight(),
                     verticalArrangement = Arrangement.Center
                 ) {

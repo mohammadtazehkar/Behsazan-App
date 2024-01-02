@@ -10,6 +10,6 @@ data class APISignUpResponse(
     val message: String,
 
     @SerializedName("data")
-    val data: SignUpData
+    val data: SignUpData?
 
 )

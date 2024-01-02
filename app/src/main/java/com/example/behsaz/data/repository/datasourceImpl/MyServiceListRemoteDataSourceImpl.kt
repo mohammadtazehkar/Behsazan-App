@@ -2,16 +2,10 @@ package com.example.behsaz.data.repository.datasourceImpl
 
 import com.example.behsaz.data.api.APIService
 import com.example.behsaz.data.models.myService.APIAddServiceResponse
-import com.example.behsaz.data.models.myService.APIGetCategoryListResponse
+import com.example.behsaz.data.models.myService.APIGetSubCategoryListResponse
 import com.example.behsaz.data.models.myService.APIMyServiceListResponse
-import com.example.behsaz.data.models.profile.APIProfileResponse
-import com.example.behsaz.data.models.profile.APIUpdateProfileResponse
-import com.example.behsaz.data.models.signup.APISignUpResponse
 import com.example.behsaz.data.repository.datasource.MyServiceListRemoteDataSource
-import com.example.behsaz.data.repository.datasource.ProfileRemoteDataSource
-import com.example.behsaz.data.repository.datasource.SignUpRemoteDataSource
 import retrofit2.Response
-import javax.inject.Inject
 
 class MyServiceListRemoteDataSourceImpl(
     private val apiService: APIService,
@@ -31,7 +25,7 @@ class MyServiceListRemoteDataSourceImpl(
         return apiService.addService(token, mapPoint, address, customerAddressId, serviceTypeId, userDescription)
     }
 
-    override suspend fun getCategoryList(url: String): Response<APIGetCategoryListResponse> {
-        return apiService.getCategoryList(url)
+    override suspend fun getSubCategoryList(url: String): Response<APIGetSubCategoryListResponse> {
+        return apiService.getSubCategoryList(url)
     }
 }

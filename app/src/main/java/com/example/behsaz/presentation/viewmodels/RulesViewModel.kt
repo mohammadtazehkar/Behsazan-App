@@ -8,6 +8,8 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.example.behsaz.domain.usecase.GetMessagesListUseCase
 import com.example.behsaz.domain.usecase.GetRulesUseCase
+import com.example.behsaz.presentation.events.ProfileEvent
+import com.example.behsaz.presentation.events.RulesEvent
 import com.example.behsaz.presentation.events.SignInUIEvent
 import com.example.behsaz.presentation.states.MessageListState
 import com.example.behsaz.presentation.states.RulesState
@@ -32,14 +34,34 @@ class RulesViewModel @Inject constructor(private val getRulesUseCase: GetRulesUs
     val rulesState: State<RulesState> = _rulesState
 
     init {
+        getRules()
+    }
+
+    fun onEvent(event: RulesEvent){
+        when(event){
+            is RulesEvent.GetRulesFromServer -> {
+                getRules()
+            }
+            is RulesEvent.PrepareRules -> {
+                prepareRules()
+            }
+            is RulesEvent.UpdateLoading -> {
+                _rulesState.value = rulesState.value.copy(
+                    isLoading = event.status
+                )
+            }
+
+        }
+    }
+
+    private fun getRules(){
         viewModelScope.launch {
             _rulesState.value = rulesState.value.copy(
                 response = getRulesUseCase.execute()
             )
         }
     }
-
-    fun setUrl(){
+    private fun prepareRules(){
         _rulesState.value = rulesState.value.copy(
             url = rulesState.value.response.data?.data!!,
         )

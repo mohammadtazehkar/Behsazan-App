@@ -65,7 +65,7 @@ object ServerConstants{
     const val SUB_URL_SERVICE_DETAILS = "api/CustomerApp/GetServiceDetails/"
     const val SUB_URL_ADD_OPINION_AND_SCORE = "api/CustomerApp/AddScoreAndOpinion"
     const val SUB_URL_GET_RULES = "api/CustomerApp/GetRule"
-    const val IMAGE_URL = "http://localhost:8585/uploads/"
+    const val IMAGE_URL = "http://behsazan.mohammadtazehkar.ir/uploads/"
     const val AUTHORIZATION = "Authorization"
     const val FIRST_NAME = "firstName"
     const val LAST_NAME = "lastName"
@@ -93,6 +93,8 @@ object JSonStatusCode{
     const val EXPIRED_TOKEN = 401
     const val DUPLICATE_USERNAME = 409
     const val INVALID_USERNAME = 404
+    const val SERVER_CONNECTION = 404
+    const val INTERNET_CONNECTION = 13720818
 }
 //endregion
 

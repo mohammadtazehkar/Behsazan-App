@@ -1,9 +1,12 @@
 package com.example.behsaz.ui.screens
 
+import android.util.Log
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
@@ -22,6 +25,7 @@ import com.example.behsaz.presentation.constants.SignUpInputTypes.PASSWORD
 import com.example.behsaz.presentation.constants.SignUpInputTypes.PHONE_NUMBER
 import com.example.behsaz.presentation.constants.SignUpInputTypes.REAGENT_TOKEN
 import com.example.behsaz.presentation.constants.SignUpInputTypes.USERNAME
+import com.example.behsaz.presentation.events.ProfileEvent
 import com.example.behsaz.presentation.events.SignInUIEvent
 import com.example.behsaz.presentation.events.SignUpEvent
 import com.example.behsaz.presentation.viewmodels.SignUpViewModel
@@ -30,7 +34,10 @@ import com.example.behsaz.ui.components.AppTopAppBar
 import com.example.behsaz.ui.components.ProgressBarDialog
 import com.example.behsaz.ui.components.UserInfoContent
 import com.example.behsaz.ui.models.TextInputData
+import com.example.behsaz.utils.JSonStatusCode
 import com.example.behsaz.utils.Resource
+import com.example.behsaz.utils.UIText
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
 
 @Composable
@@ -51,10 +58,34 @@ fun SignUpScreen(
                         message = event.message.asString(context)
                     )
                 }
-                else -> {}
             }
         }
     }
+    LaunchedEffect(key1 = signUpState.response) {
+        when (signUpState.response) {
+            is Resource.Loading -> {
+                // Display loading UI
+                signUpViewModel.onEvent(SignUpEvent.UpdateLoading(true))
+            }
+            is Resource.Success -> {
+                // Display success UI with data
+                signUpViewModel.onEvent(SignUpEvent.UpdateLoading(false))
+            }
+            is Resource.Error -> {
+                // Display error UI with message
+                signUpViewModel.onEvent(SignUpEvent.UpdateLoading(false))
+                when (signUpState.response.data?.statusCode) {
+                    JSonStatusCode.INTERNET_CONNECTION -> {
+                        snackbarHostState.showSnackbar(message = UIText.StringResource(R.string.not_connection_internet).asString(context))
+                    }
+                    JSonStatusCode.SERVER_CONNECTION -> {
+                        snackbarHostState.showSnackbar(message = UIText.StringResource(R.string.server_connection_error).asString(context))
+                    }
+                }
+            }
+        }
+    }
+
     if (signUpState.isLoading) {
         ProgressBarDialog(
             onDismissRequest = {
@@ -66,7 +97,7 @@ fun SignUpScreen(
     Scaffold(
         snackbarHost = {
             SnackbarHost(snackbarHostState) {
-                AppErrorSnackBar(it.visuals.message)
+                AppErrorSnackBar(it)
             }
         },
         topBar = {
@@ -158,20 +189,4 @@ fun SignUpScreen(
             )
         }
     )
-
-    when (signUpState.response) {
-        is Resource.Loading -> {
-            // Display loading UI
-            signUpViewModel.onEvent(SignUpEvent.UpdateLoading(true))
-        }
-        is Resource.Success -> {
-            // Display success UI with data
-            signUpViewModel.onEvent(SignUpEvent.UpdateLoading(false))
-        }
-        is Resource.Error -> {
-            // Display error UI with message
-            signUpViewModel.onEvent(SignUpEvent.UpdateLoading(false))
-        }
-    }
-
 }

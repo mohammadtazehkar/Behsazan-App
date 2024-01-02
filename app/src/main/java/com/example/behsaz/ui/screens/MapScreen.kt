@@ -58,7 +58,6 @@ import org.neshan.mapsdk.model.Marker
 import org.neshan.mapsdk.style.NeshanMapStyle
 
 private var color : Int = 0
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MapScreen(
     forWhat : String,
@@ -213,7 +212,7 @@ fun MapScreen(
         floatingActionButtonPosition = FabPosition.End,
         snackbarHost = {
             SnackbarHost(snackbarHostState) {
-                AppErrorSnackBar(it.visuals.message)
+                AppErrorSnackBar(it)
             }
         },
     ) { innerPadding ->

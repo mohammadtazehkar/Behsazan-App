@@ -29,11 +29,7 @@ class MyAddressListViewModel @Inject constructor (private val getMyAddressListUs
     val myAddressListState: State<MyAddressListState> = _myAddressListState
 
     init {
-        viewModelScope.launch {
-            _myAddressListState.value = myAddressListState.value.copy(
-                response = getMyAddressListUseCase.execute()
-            )
-        }
+        getListFromServer()
     }
 
     private val _uiEventFlow = MutableSharedFlow<SignInUIEvent>()
@@ -61,7 +57,17 @@ class MyAddressListViewModel @Inject constructor (private val getMyAddressListUs
                     isLoading = event.status
                 )
             }
+            is MyAddressListEvent.GetListFromServer ->{
+                getListFromServer()
+            }
+        }
+    }
 
+    private fun getListFromServer(){
+        viewModelScope.launch {
+            _myAddressListState.value = myAddressListState.value.copy(
+                response = getMyAddressListUseCase.execute()
+            )
         }
     }
 }

@@ -7,6 +7,7 @@ import com.example.behsaz.utils.Resource
 
 
 data class RulesState(
+    var isLoading: Boolean = false,
     var url: String,
     var response: Resource<APIGetRulesResponse>
 )

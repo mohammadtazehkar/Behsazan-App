@@ -9,6 +9,6 @@ data class APIHomeDataResponse(
     @SerializedName("message")
     val message: String,
     @SerializedName("data")
-    val data: CategoriesAndSlidesData
+    val data: CategoriesAndSlidesData?
 
 )

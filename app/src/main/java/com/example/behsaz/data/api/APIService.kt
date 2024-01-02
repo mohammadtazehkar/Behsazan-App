@@ -5,7 +5,7 @@ import com.example.behsaz.data.models.message.APIMessageListResponse
 import com.example.behsaz.data.models.myAddress.APIAddAddressResponse
 import com.example.behsaz.data.models.myAddress.APIMyAddressListResponse
 import com.example.behsaz.data.models.myService.APIAddServiceResponse
-import com.example.behsaz.data.models.myService.APIGetCategoryListResponse
+import com.example.behsaz.data.models.myService.APIGetSubCategoryListResponse
 import com.example.behsaz.data.models.myService.APIMyServiceListResponse
 import com.example.behsaz.data.models.profile.APIProfileResponse
 import com.example.behsaz.data.models.profile.APIUpdateProfileResponse
@@ -135,9 +135,9 @@ interface APIService {
     ): Response<APIAddServiceResponse>
 
     @GET
-    suspend fun getCategoryList(
+    suspend fun getSubCategoryList(
         @Url url: String,
-    ): Response<APIGetCategoryListResponse>
+    ): Response<APIGetSubCategoryListResponse>
 
     @GET
     suspend fun getMessagesList(

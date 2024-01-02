@@ -1,7 +1,7 @@
 package com.example.behsaz.data.repository.datasource
 
 import com.example.behsaz.data.models.myService.APIAddServiceResponse
-import com.example.behsaz.data.models.myService.APIGetCategoryListResponse
+import com.example.behsaz.data.models.myService.APIGetSubCategoryListResponse
 import com.example.behsaz.data.models.myService.APIMyServiceListResponse
 import retrofit2.Response
 
@@ -20,7 +20,7 @@ interface MyServiceListRemoteDataSource {
         userDescription: String
     ): Response<APIAddServiceResponse>
 
-    suspend fun getCategoryList(
+    suspend fun getSubCategoryList(
         url: String
-    ): Response<APIGetCategoryListResponse>
+    ): Response<APIGetSubCategoryListResponse>
 }

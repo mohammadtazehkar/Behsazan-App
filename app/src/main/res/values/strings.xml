@@ -37,7 +37,7 @@
     <string name="agent_code_is">کد سرویسکار :</string>
     <string name="service_count_is">تعداد سرویس :</string>
     <string name="add_service">ثبت درخواست</string>
-    <string name="select_category">دسته مورد نظر خود را انتخاب نمایید .</string>
+    <string name="select_category">دسته مورد نظر برای %1$s را انتخاب نمایید .</string>
     <string name="enter_your_address">آدرس خود را وارد نمایید :</string>
     <string name="select_from_my_adresses">انتخاب از آدرس های من</string>
     <string name="description">توضیحات</string>
@@ -123,4 +123,6 @@
     <string name="empty_address_list">متاسفانه در حال حاضر آدرسی برای نمایش وجود ندارد! برای ایجاد آدرس جدید گزینه + را از پایین صفحه انتخاب نمایید</string>
     <string name="empty_service_list">متاسفانه در حال حاضر سرویسی برای نمایش وجود ندارد</string>
     <string name="empty_category_list">متاسفانه در حال حاضر دسته بندی برای نمایش وجود ندارد</string>
+    <string name="empty_address_dialog">در حال حاضر آدرسی برای نمایش وجود ندارد! برای ایجاد آدرس به منوی آدرس های من مراجعه نمایید</string>
+    <string name="trye_again">تلاش مجدد</string>
 </resources>

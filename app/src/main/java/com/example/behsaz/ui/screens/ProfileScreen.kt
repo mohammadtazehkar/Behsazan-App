@@ -4,8 +4,10 @@ import android.util.Log
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
@@ -28,7 +30,12 @@ import com.example.behsaz.ui.components.AppTopAppBar
 import com.example.behsaz.ui.components.ProgressBarDialog
 import com.example.behsaz.ui.components.UserInfoContent
 import com.example.behsaz.ui.models.TextInputData
+import com.example.behsaz.utils.JSonStatusCode.EXPIRED_TOKEN
+import com.example.behsaz.utils.JSonStatusCode.INTERNET_CONNECTION
+import com.example.behsaz.utils.JSonStatusCode.SERVER_CONNECTION
+import com.example.behsaz.utils.JSonStatusCode.SUCCESS
 import com.example.behsaz.utils.Resource
+import com.example.behsaz.utils.UIText
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
 
@@ -40,7 +47,7 @@ fun ProfileScreen(
 ) {
 
     val context = LocalContext.current
-    var profileState = profileViewModel.profileState.value
+    val profileState = profileViewModel.profileState.value
     val snackbarHostState = remember { SnackbarHostState() }
 
     if (profileState.isLoading) {
@@ -59,13 +66,6 @@ fun ProfileScreen(
                         message = event.message.asString(context)
                     )
                 }
-                is SignInUIEvent.ExpiredToken ->{
-                    snackbarHostState.showSnackbar(
-                        message = event.message.asString(context)
-                    )
-                    delay(500)  // the delay of 0.5 seconds
-                    onExpiredToken()
-                }
             }
         }
     }
@@ -78,11 +78,55 @@ fun ProfileScreen(
             is Resource.Success -> {
                 // Display success UI with data
                 profileViewModel.onEvent(ProfileEvent.UpdateLoading(false))
-                profileViewModel.onEvent(ProfileEvent.PrepareData(false))
+                if (profileState.getProfileResponse.data?.statusCode == SUCCESS) {
+                    profileViewModel.onEvent(ProfileEvent.PrepareData(false))
+                }
             }
             is Resource.Error -> {
                 // Display error UI with message
                 profileViewModel.onEvent(ProfileEvent.UpdateLoading(false))
+                when (profileState.getProfileResponse.data?.statusCode) {
+                    EXPIRED_TOKEN -> {
+                        snackbarHostState.showSnackbar(
+                            message = UIText.StringResource(R.string.expired_token).asString(context)
+                        )
+                        delay(500)  // the delay of 0.5 seconds
+                        onExpiredToken()
+                    }
+                    INTERNET_CONNECTION -> {
+                        val result = snackbarHostState
+                            .showSnackbar(
+                                message = UIText.StringResource(R.string.not_connection_internet).asString(context),
+                                actionLabel = UIText.StringResource(R.string.trye_again).asString(context),
+                                duration = SnackbarDuration.Indefinite
+                            )
+                        when (result) {
+                            SnackbarResult.ActionPerformed -> {
+                                profileViewModel.onEvent(ProfileEvent.GetProfileData)
+                            }
+                            SnackbarResult.Dismissed -> {
+                                /* Handle snackbar dismissed */
+                                Log.i("mamali","ssss")
+                            }
+                        }
+                    }
+                    SERVER_CONNECTION -> {
+                        val result = snackbarHostState
+                            .showSnackbar(
+                                message = UIText.StringResource(R.string.server_connection_error).asString(context),
+                                actionLabel = UIText.StringResource(R.string.trye_again).asString(context),
+                                duration = SnackbarDuration.Indefinite
+                            )
+                        when (result) {
+                            SnackbarResult.ActionPerformed -> {
+                                profileViewModel.onEvent(ProfileEvent.GetProfileData)
+                            }
+                            SnackbarResult.Dismissed -> {
+                                /* Handle snackbar dismissed */
+                            }
+                        }
+                    }
+                }
             }
         }
     }
@@ -100,6 +144,21 @@ fun ProfileScreen(
             is Resource.Error -> {
                 // Display error UI with message
                 profileViewModel.onEvent(ProfileEvent.UpdateLoading(false))
+                when (profileState.getProfileResponse.data?.statusCode) {
+                    EXPIRED_TOKEN -> {
+                        snackbarHostState.showSnackbar(
+                            message = UIText.StringResource(R.string.expired_token).asString(context)
+                        )
+                        delay(500)  // the delay of 0.5 seconds
+                        onExpiredToken()
+                    }
+                    INTERNET_CONNECTION -> {
+                        snackbarHostState.showSnackbar(message = UIText.StringResource(R.string.not_connection_internet).asString(context),)
+                    }
+                    SERVER_CONNECTION -> {
+                        snackbarHostState.showSnackbar(message = UIText.StringResource(R.string.server_connection_error).asString(context),)
+                    }
+                }
             }
         }
     }
@@ -124,7 +183,7 @@ fun ProfileScreen(
         },
         snackbarHost = {
             SnackbarHost(snackbarHostState) {
-                AppErrorSnackBar(it.visuals.message)
+                AppErrorSnackBar(it)
             }
         },
         content = { paddingValues ->

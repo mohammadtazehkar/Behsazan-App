@@ -52,7 +52,7 @@ private val topItems = listOf(
 private val middleItems = listOf(
     DrawerItemData(
         R.string.my_services,
-        R.mipmap.ic_app_icon,
+        R.mipmap.ic_list_blue,
         MY_SERVICES_SCREEN
     ),
     DrawerItemData(

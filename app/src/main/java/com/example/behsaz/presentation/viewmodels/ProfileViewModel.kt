@@ -1,17 +1,14 @@
 package com.example.behsaz.presentation.viewmodels
 
-import android.util.Log
 import android.util.Patterns
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.example.behsaz.R
 import com.example.behsaz.domain.usecase.GetProfileDataUseCase
 import com.example.behsaz.domain.usecase.UpdateProfileDataUseCase
-import com.example.behsaz.presentation.constants.SignInInputTypes
 import com.example.behsaz.utils.UIText
 import com.example.behsaz.presentation.constants.SignUpInputTypes
 import com.example.behsaz.presentation.constants.SignUpInputTypes.EMAIL
@@ -25,7 +22,6 @@ import com.example.behsaz.presentation.constants.SignUpInputTypes.USERNAME
 import com.example.behsaz.presentation.events.ProfileEvent
 import com.example.behsaz.presentation.events.SignInUIEvent
 import com.example.behsaz.presentation.states.ProfileState
-import com.example.behsaz.utils.JSonStatusCode
 import com.example.behsaz.utils.JSonStatusCode.DUPLICATE_USERNAME
 import com.example.behsaz.utils.JSonStatusCode.SUCCESS
 import com.example.behsaz.utils.Resource
@@ -96,6 +92,10 @@ class ProfileViewModel @Inject constructor(
                 prepareData(event.fromUpdate)
             }
 
+            is ProfileEvent.GetProfileData ->{
+                getProfileData()
+            }
+
         }
     }
 
@@ -104,16 +104,6 @@ class ProfileViewModel @Inject constructor(
             _profileState.value = profileState.value.copy(
                 getProfileResponse = getProfileUseCase.execute()
             )
-            if (profileState.value.getProfileResponse.data?.statusCode == JSonStatusCode.EXPIRED_TOKEN){
-                _uiEventFlow.emit(
-                    SignInUIEvent.ExpiredToken(
-                        message = UIText.StringResource(
-                            resId = R.string.expired_token,
-                            profileState.value.userTextFieldStates[SignInInputTypes.PASSWORD]
-                        )
-                    )
-                )
-            }
         }
 
     }
@@ -273,7 +263,7 @@ class ProfileViewModel @Inject constructor(
                         SignInUIEvent.ShowMessage(
                             message = UIText.StringResource(
                                 resId = R.string.duplicate_username,
-                                _profileState.value.userTextFieldStates[SignUpInputTypes.USERNAME]
+                                _profileState.value.userTextFieldStates[USERNAME]
                             )
                         )
                     )

@@ -12,13 +12,14 @@ import com.example.behsaz.domain.repository.SignUpRepository
 import com.example.behsaz.domain.usecase.AddMyAddressUseCase
 import com.example.behsaz.domain.usecase.AddMyServiceUseCase
 import com.example.behsaz.domain.usecase.CheckUserExistUseCase
-import com.example.behsaz.domain.usecase.GetCategoryListUseCase
+import com.example.behsaz.domain.usecase.DeleteUserDataUseCase
 import com.example.behsaz.domain.usecase.GetHomeDataUseCase
 import com.example.behsaz.domain.usecase.GetMessagesListUseCase
 import com.example.behsaz.domain.usecase.GetMyAddressListUseCase
 import com.example.behsaz.domain.usecase.GetMyServiceListUseCase
 import com.example.behsaz.domain.usecase.GetProfileDataUseCase
 import com.example.behsaz.domain.usecase.GetRulesUseCase
+import com.example.behsaz.domain.usecase.GetSubCategoryListUseCase
 import com.example.behsaz.domain.usecase.GetUserFullNameUseCase
 import com.example.behsaz.domain.usecase.SignInUseCase
 import com.example.behsaz.domain.usecase.SignUpUseCase
@@ -124,10 +125,10 @@ class UseCaseModule {
 
     @Singleton
     @Provides
-    fun provideGetCategoryListUseCase(
+    fun provideGetSubCategoryListUseCase(
         myServiceListRepository: MyServiceListRepository
-    ):GetCategoryListUseCase{
-        return GetCategoryListUseCase(myServiceListRepository)
+    ): GetSubCategoryListUseCase {
+        return GetSubCategoryListUseCase(myServiceListRepository)
     }
 
     @Singleton
@@ -152,5 +153,13 @@ class UseCaseModule {
         homeRepository: HomeRepository
     ):GetUserFullNameUseCase{
         return GetUserFullNameUseCase(homeRepository)
+    }
+
+    @Singleton
+    @Provides
+    fun provideDeleteUserDataUseCase(
+        homeRepository: HomeRepository
+    ):DeleteUserDataUseCase{
+        return DeleteUserDataUseCase(homeRepository)
     }
 }

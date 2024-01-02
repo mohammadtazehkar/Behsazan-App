@@ -7,6 +7,8 @@ import com.example.behsaz.data.repository.datasource.AppLocalDataSource
 import com.example.behsaz.data.repository.datasource.ProfileRemoteDataSource
 import com.example.behsaz.domain.repository.ProfileRepository
 import com.example.behsaz.utils.JSonStatusCode.EXPIRED_TOKEN
+import com.example.behsaz.utils.JSonStatusCode.INTERNET_CONNECTION
+import com.example.behsaz.utils.JSonStatusCode.SERVER_CONNECTION
 import com.example.behsaz.utils.JSonStatusCode.SUCCESS
 import com.example.behsaz.utils.NetworkUtil
 import com.example.behsaz.utils.Resource
@@ -29,14 +31,14 @@ class ProfileRepositoryImpl (
                         appLocalDataSource.deleteUserToken()
                         Resource.Error("expired Token",APIProfileResponse(response.code(),"expired Token", null))
                     }else{
-                        Resource.Error("An error occurred")
+                        Resource.Error("An error occurred",APIProfileResponse(SERVER_CONNECTION,"An error occurred",null))
                     }
                 }
             } catch (e: Exception) {
-                Resource.Error(e.message ?: "An error occurred")
+                Resource.Error(e.message ?: "An error occurred",APIProfileResponse(SERVER_CONNECTION,"An error occurred",null))
             }
         } else {
-            Resource.Error("No internet connection")
+            Resource.Error("No internet connection", APIProfileResponse(INTERNET_CONNECTION, "No internet connection",null))
         }
     }
 
@@ -63,14 +65,14 @@ class ProfileRepositoryImpl (
                         appLocalDataSource.deleteUserToken()
                         Resource.Error("expired Token",APIUpdateProfileResponse(response.code(),"expired Token", null))
                     }else{
-                        Resource.Error("An error occurred")
+                        Resource.Error("An error occurred",APIUpdateProfileResponse(SERVER_CONNECTION,"An error occurred",null))
                     }
                 }
             } catch (e: Exception) {
-                Resource.Error(e.message ?: "An error occurred")
+                Resource.Error(e.message ?: "An error occurred",APIUpdateProfileResponse(SERVER_CONNECTION,"An error occurred",null))
             }
         } else {
-            Resource.Error("No internet connection")
+            Resource.Error("No internet connection", APIUpdateProfileResponse(INTERNET_CONNECTION, "No internet connection",null))
         }
     }
 }

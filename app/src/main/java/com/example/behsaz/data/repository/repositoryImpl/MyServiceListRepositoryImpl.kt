@@ -1,9 +1,8 @@
 package com.example.behsaz.data.repository.repositoryImpl
 
 import com.example.behsaz.data.models.myService.APIAddServiceResponse
-import com.example.behsaz.data.models.myService.APIGetCategoryListResponse
+import com.example.behsaz.data.models.myService.APIGetSubCategoryListResponse
 import com.example.behsaz.data.models.myService.APIMyServiceListResponse
-import com.example.behsaz.data.models.profile.APIProfileResponse
 import com.example.behsaz.data.repository.datasource.AppLocalDataSource
 import com.example.behsaz.data.repository.datasource.MyServiceListRemoteDataSource
 import com.example.behsaz.domain.repository.MyServiceListRepository
@@ -30,18 +29,17 @@ class MyServiceListRepositoryImpl (
                     if (response.code() == JSonStatusCode.EXPIRED_TOKEN){
                         appLocalDataSource.deleteUserInfo()
                         appLocalDataSource.deleteUserToken()
-                        Resource.Error("expired Token",
-                            APIMyServiceListResponse(response.code(),"expired Token", null)
+                        Resource.Error("expired Token", APIMyServiceListResponse(response.code(),"expired Token", null)
                         )
                     }else{
-                        Resource.Error("An error occurred")
+                        Resource.Error("An error occurred",APIMyServiceListResponse(JSonStatusCode.SERVER_CONNECTION,"An error occurred",null))
                     }
                 }
             } catch (e: Exception) {
-                Resource.Error(e.message ?: "An error occurred")
+                Resource.Error(e.message ?: "An error occurred",APIMyServiceListResponse(JSonStatusCode.SERVER_CONNECTION,"An error occurred",null))
             }
         } else {
-            Resource.Error("No internet connection")
+            Resource.Error("No internet connection", APIMyServiceListResponse(JSonStatusCode.INTERNET_CONNECTION, "No internet connection",null))
         }
     }
 
@@ -64,31 +62,31 @@ class MyServiceListRepositoryImpl (
                         appLocalDataSource.deleteUserToken()
                         Resource.Error("expired Token",APIAddServiceResponse(response.code(),"expired Token"))
                     }else{
-                        Resource.Error("An error occurred")
+                        Resource.Error("An error occurred",APIAddServiceResponse(JSonStatusCode.SERVER_CONNECTION,"An error occurred"))
                     }
                 }
             } catch (e: Exception) {
-                Resource.Error(e.message ?: "An error occurred")
+                Resource.Error(e.message ?: "An error occurred",APIAddServiceResponse(JSonStatusCode.SERVER_CONNECTION,"An error occurred"))
             }
         } else {
-            Resource.Error("No internet connection")
+            Resource.Error("No internet connection", APIAddServiceResponse(JSonStatusCode.INTERNET_CONNECTION, "No internet connection"))
         }
     }
 
-    override suspend fun getCategoryList(categoryId: String): Resource<APIGetCategoryListResponse> {
+    override suspend fun getSubCategoryList(categoryId: String): Resource<APIGetSubCategoryListResponse> {
         return if (networkUtil.isInternetAvailable()) {
             try {
-                val response = myServiceListRemoteDataSource.getCategoryList("$BASE_URL$SUB_URL_CUSTOMER_SERVICE_TYPES$categoryId")
+                val response = myServiceListRemoteDataSource.getSubCategoryList("$BASE_URL$SUB_URL_CUSTOMER_SERVICE_TYPES$categoryId")
                 if (response.isSuccessful && response.body() != null) {
                     Resource.Success(response.body()!!)
                 } else {
-                    Resource.Error("An error occurred")
+                    Resource.Error("An error occurred",APIGetSubCategoryListResponse(JSonStatusCode.SERVER_CONNECTION,"An error occurred",null))
                 }
             } catch (e: Exception) {
-                Resource.Error(e.message ?: "An error occurred")
+                Resource.Error(e.message ?: "An error occurred",APIGetSubCategoryListResponse(JSonStatusCode.SERVER_CONNECTION,"An error occurred",null))
             }
         } else {
-            Resource.Error("No internet connection")
+            Resource.Error("No internet connection", APIGetSubCategoryListResponse(JSonStatusCode.INTERNET_CONNECTION, "No internet connection",null))
         }
     }
 }

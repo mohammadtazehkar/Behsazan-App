@@ -7,6 +7,7 @@ import com.example.behsaz.utils.Resource
 
 data class ProfileState(
     var isLoading: Boolean = true,
+    var isConnectionProblem: Boolean = false,
     var personalTextFieldStates : MutableList<MutableState<String>> = mutableListOf(),
     var userTextFieldStates : MutableList<MutableState<String>> = mutableListOf(),
     var isEditable: Boolean = false,

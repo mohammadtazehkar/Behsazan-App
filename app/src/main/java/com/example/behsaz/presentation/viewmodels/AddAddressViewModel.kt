@@ -149,7 +149,6 @@ class AddAddressViewModel @Inject constructor(
             }
         }
         else {
-            //TODO addAddress
             viewModelScope.launch {
                 if (addAddressState.value.id == 0){
                     _addAddressState.value = addAddressState.value.copy(

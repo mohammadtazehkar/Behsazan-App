@@ -215,6 +215,13 @@ fun BehsazNavHost(
                         navController.navigate(navigateTo)
                     }
                 },
+                onLogoutCompleted = {
+                    navController.navigate(SPLASH_SCREEN){
+                        popUpTo(HOME_SCREEN) {
+                            inclusive = true
+                        }
+                    }
+                }
             )
         }
         composable(
@@ -286,8 +293,18 @@ fun BehsazNavHost(
             }
         ) {
             MyServiceListScreen (
-                onServiceItemClick = {
-                    navController.navigate("$ADD_SERVICE_SCREEN/0/ ")
+//                onServiceItemClick = {
+//                    navController.navigate("$ADD_SERVICE_SCREEN/0/ ")
+//                },
+                onExpiredToken = {
+                    navController.navigate(SPLASH_SCREEN){
+                        popUpTo(MY_SERVICES_SCREEN) {
+                            inclusive = true
+                        }
+                        popUpTo(HOME_SCREEN) {
+                            inclusive = true
+                        }
+                    }
                 },
                 onNavUp = navController::navigateUp
             )
@@ -328,6 +345,16 @@ fun BehsazNavHost(
                 },
                 onShowLocation = {
                     navController.navigate("$MAP_SCREEN/$FOR_VIEW_LOCATION")
+                },
+                onExpiredToken = {
+                    navController.navigate(SPLASH_SCREEN){
+                        popUpTo(MY_ADDRESSES_SCREEN) {
+                            inclusive = true
+                        }
+                        popUpTo(HOME_SCREEN) {
+                            inclusive = true
+                        }
+                    }
                 },
                 onNavUp = navController::navigateUp
             )
@@ -533,24 +560,28 @@ fun BehsazNavHost(
                 )
             }
         ) {
-
-            val categoryId = it.arguments?.getInt(CATEGORY_ID)!!
-            val categoryTitle = it.arguments?.getString(CATEGORY_TITLE)!!
             AddServiceScreen(
                 sharedViewModel = sharedViewModel,
-                categoryId = categoryId,
-                categoryTitle = categoryTitle,
                 onSelectLocation = {
                     navController.navigate("$MAP_SCREEN/$FOR_ADD_LOCATION")
                 },
                 onShowLocation = {
                     navController.navigate("$MAP_SCREEN/$FOR_VIEW_LOCATION")
                 },
+                onExpiredToken = {
+                    navController.navigate(SPLASH_SCREEN){
+                        popUpTo(ADD_SERVICE_SCREEN) {
+                            inclusive = true
+                        }
+                        popUpTo(HOME_SCREEN) {
+                            inclusive = true
+                        }
+                    }
+                },
                 onNavUp = navController::navigateUp
             )
         }
         composable(
-//            route = "$MAP_SCREEN/{$CATEGORY_ID}/{$CATEGORY_TITLE}/{$ADDRESS_ID}/{$ADDRESS_TITLE}/{$ADDRESS}/{$LATITUDE}/{$LONGITUDE}/{$DESCRIPTION}",
             route = "$MAP_SCREEN/{$FOR_WHAT}",
             enterTransition = {
                 slideIntoContainer(

@@ -6,6 +6,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import com.example.behsaz.domain.usecase.DeleteUserDataUseCase
 import com.example.behsaz.domain.usecase.GetHomeDataUseCase
 import com.example.behsaz.domain.usecase.GetUserFullNameUseCase
 import com.example.behsaz.presentation.events.HomeEvent
@@ -21,7 +22,8 @@ import javax.inject.Inject
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     private val getHomeDataUseCase: GetHomeDataUseCase,
-    private val getUserFullNameUseCase: GetUserFullNameUseCase
+    private val getUserFullNameUseCase: GetUserFullNameUseCase,
+    private val deleteUserDataUseCase: DeleteUserDataUseCase,
 ) :
     ViewModel() {
 
@@ -45,12 +47,7 @@ class HomeViewModel @Inject constructor(
     val uiEventFlow = _uiEventFlow.asSharedFlow()
 
     init {
-        viewModelScope.launch {
-            _homeState.value = homeState.value.copy(
-                fullName = getUserFullNameUseCase.execute(),
-                response = getHomeDataUseCase.execute()
-            )
-        }
+        getHomeData()
     }
 
     fun onEvent(event: HomeEvent) {
@@ -73,6 +70,30 @@ class HomeViewModel @Inject constructor(
                     isLoading = event.status
                 )
             }
+
+            is HomeEvent.GetHomeData -> {
+                getHomeData()
+            }
+
+            is HomeEvent.DoLogout -> {
+                doLogout(event.onLogoutComplete)
+            }
+        }
+    }
+
+    private fun getHomeData(){
+        viewModelScope.launch {
+            _homeState.value = homeState.value.copy(
+                fullName = getUserFullNameUseCase.execute(),
+                response = getHomeDataUseCase.execute()
+            )
+        }
+    }
+
+    private fun doLogout(onLogoutCompleted: () -> Unit){
+        viewModelScope.launch {
+            deleteUserDataUseCase.execute()
+            onLogoutCompleted()
         }
     }
 

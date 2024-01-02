@@ -1,5 +1,6 @@
 package com.example.behsaz.ui.screens
 
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -21,10 +22,17 @@ import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.material3.Divider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -33,25 +41,33 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.behsaz.R
 import com.example.behsaz.data.models.myService.MyServiceListData
 import com.example.behsaz.presentation.events.HomeEvent
+import com.example.behsaz.presentation.events.MyAddressListEvent
 import com.example.behsaz.presentation.events.MyServiceListEvent
+import com.example.behsaz.presentation.events.ProfileEvent
 import com.example.behsaz.presentation.viewmodels.MyServiceListViewModel
+import com.example.behsaz.ui.components.AppErrorSnackBar
 import com.example.behsaz.ui.components.AppTopAppBar
 import com.example.behsaz.ui.components.CardColumnMediumCorner
 import com.example.behsaz.ui.components.EmptyView
 import com.example.behsaz.ui.components.ProgressBarDialog
 import com.example.behsaz.ui.components.TextTitleMedium
 import com.example.behsaz.ui.components.TextTitleSmall
+import com.example.behsaz.utils.JSonStatusCode
 import com.example.behsaz.utils.Resource
+import com.example.behsaz.utils.UIText
+import kotlinx.coroutines.delay
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun MyServiceListScreen(
     myServiceListViewModel: MyServiceListViewModel = hiltViewModel(),
-    onServiceItemClick: () -> Unit,
+//    onServiceItemClick: () -> Unit,
+    onExpiredToken: () -> Unit,
     onNavUp: () -> Unit
 ) {
-
+    val context = LocalContext.current
     val myServiceListState = myServiceListViewModel.myServiceListState.value
+    val snackbarHostState = remember { SnackbarHostState() }
     val pullRefreshState = rememberPullRefreshState(
         refreshing = myServiceListState.isLoading,
         onRefresh = {myServiceListViewModel.onEvent(MyServiceListEvent.GetListFromServer)}
@@ -65,6 +81,68 @@ fun MyServiceListScreen(
         )
     }
 
+    LaunchedEffect(key1 = myServiceListState.response) {
+        when (myServiceListState.response) {
+            is Resource.Loading -> {
+                // Display loading UI
+                myServiceListViewModel.onEvent(MyServiceListEvent.UpdateLoading(true))
+            }
+            is Resource.Success -> {
+                // Display success UI with data
+                myServiceListViewModel.onEvent(MyServiceListEvent.UpdateLoading(false))
+                if (myServiceListState.response.data?.statusCode == JSonStatusCode.SUCCESS) {
+                    myServiceListViewModel.onEvent(MyServiceListEvent.PrepareList)
+                }
+            }
+            is Resource.Error -> {
+                // Display error UI with message
+                myServiceListViewModel.onEvent(MyServiceListEvent.UpdateLoading(false))
+                when (myServiceListState.response.data?.statusCode) {
+                    JSonStatusCode.EXPIRED_TOKEN -> {
+                        snackbarHostState.showSnackbar(
+                            message = UIText.StringResource(R.string.expired_token).asString(context)
+                        )
+                        delay(500)  // the delay of 0.5 seconds
+                        onExpiredToken()
+                    }
+                    JSonStatusCode.INTERNET_CONNECTION -> {
+                        val result = snackbarHostState
+                            .showSnackbar(
+                                message = UIText.StringResource(R.string.not_connection_internet).asString(context),
+                                actionLabel = UIText.StringResource(R.string.trye_again).asString(context),
+                                duration = SnackbarDuration.Indefinite
+                            )
+                        when (result) {
+                            SnackbarResult.ActionPerformed -> {
+                                myServiceListViewModel.onEvent(MyServiceListEvent.GetListFromServer)
+                            }
+                            SnackbarResult.Dismissed -> {
+                                /* Handle snackbar dismissed */
+                                Log.i("mamali","ssss")
+                            }
+                        }
+                    }
+                    JSonStatusCode.SERVER_CONNECTION -> {
+                        val result = snackbarHostState
+                            .showSnackbar(
+                                message = UIText.StringResource(R.string.server_connection_error).asString(context),
+                                actionLabel = UIText.StringResource(R.string.trye_again).asString(context),
+                                duration = SnackbarDuration.Indefinite
+                            )
+                        when (result) {
+                            SnackbarResult.ActionPerformed -> {
+                                myServiceListViewModel.onEvent(MyServiceListEvent.GetListFromServer)
+                            }
+                            SnackbarResult.Dismissed -> {
+                                /* Handle snackbar dismissed */
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     Scaffold(
         topBar = {
             AppTopAppBar(
@@ -72,8 +150,13 @@ fun MyServiceListScreen(
                 isBackVisible = true,
                 onBack = onNavUp
             )
+        },
+        snackbarHost = {
+            SnackbarHost(snackbarHostState) {
+                AppErrorSnackBar(it)
+            }
         }
-    ) {paddingValue ->
+        ) {paddingValue ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -101,7 +184,7 @@ fun MyServiceListScreen(
                             items(myServiceListState.listState.size) { index ->
                                 MyServiceListItem(
                                     item = myServiceListState.listState[index],
-                                    onServiceItemClick = onServiceItemClick
+//                                    onServiceItemClick = onServiceItemClick
                                 )
                             }
                             item {
@@ -121,33 +204,17 @@ fun MyServiceListScreen(
             }
         }
     }
-
-    when (myServiceListState.response) {
-        is Resource.Loading -> {
-            // Display loading UI
-            myServiceListViewModel.onEvent(MyServiceListEvent.UpdateLoading(true))
-        }
-        is Resource.Success -> {
-            // Display success UI with data
-            myServiceListViewModel.onEvent(MyServiceListEvent.UpdateLoading(false))
-            myServiceListViewModel.onEvent(MyServiceListEvent.PrepareList)
-        }
-        is Resource.Error -> {
-            // Display error UI with message
-            myServiceListViewModel.onEvent(MyServiceListEvent.UpdateLoading(false))
-        }
-    }
 }
 
 @Composable
 fun MyServiceListItem(
     item: MyServiceListData,
-    onServiceItemClick: () -> Unit,
+//    onServiceItemClick: () -> Unit,
     ) {
     CardColumnMediumCorner(
-        columnModifier = Modifier.clickable {
-            onServiceItemClick()
-        }
+//        columnModifier = Modifier.clickable {
+//            onServiceItemClick()
+//        }
     ) {
         TextTitleMedium(text = item.serviceGroup)
         Divider(

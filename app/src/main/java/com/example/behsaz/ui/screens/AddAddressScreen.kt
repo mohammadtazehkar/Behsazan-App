@@ -75,6 +75,7 @@ fun AddAddressScreen(
     val addAddressState = addAddressViewModel.addAddressState.value
     val sharedState = sharedViewModel.sharedState.value
     val snackbarHostState = remember { SnackbarHostState() }
+
     LaunchedEffect(key1 = true) {
         addAddressViewModel.uiEventFlow.collectLatest { event ->
             when (event) {
@@ -83,7 +84,19 @@ fun AddAddressScreen(
                         message = event.message.asString(context)
                     )
                 }
-                else -> {}
+            }
+        }
+    }
+    LaunchedEffect(key1 = addAddressState.response) {
+        when (addAddressState.response) {
+            is Resource.Loading -> {
+                // Display loading UI
+            }
+            is Resource.Success -> {
+                // Display success UI with data
+            }
+            is Resource.Error -> {
+                // Display error UI with message
             }
         }
     }
@@ -101,7 +114,7 @@ fun AddAddressScreen(
         },
         snackbarHost = {
             SnackbarHost(snackbarHostState) {
-                AppErrorSnackBar(it.visuals.message)
+                AppErrorSnackBar(it)
             }
         },
         content = {paddingValue ->
@@ -147,17 +160,6 @@ fun AddAddressScreen(
         // your action
         sharedViewModel.selectLocation(0.00,0.00)
         onNavUp()
-    }
-    when (addAddressState.response) {
-        is Resource.Loading -> {
-            // Display loading UI
-        }
-        is Resource.Success -> {
-            // Display success UI with data
-        }
-        is Resource.Error -> {
-            // Display error UI with message
-        }
     }
 
 }

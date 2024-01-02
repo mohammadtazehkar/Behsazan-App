@@ -22,11 +22,7 @@ import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -38,7 +34,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.behsaz.R
 import com.example.behsaz.presentation.events.AddServiceEvent
 import com.example.behsaz.presentation.events.SignInUIEvent
@@ -50,28 +45,26 @@ import com.example.behsaz.ui.components.CardMediumCorner
 import com.example.behsaz.ui.components.CardRowMediumCorner
 import com.example.behsaz.ui.components.SecondaryButton
 import com.example.behsaz.ui.components.TextBodyMedium
-import com.example.behsaz.ui.components.TextTitleSmall
+import com.example.behsaz.ui.components.TextLabelSmall
 import com.example.behsaz.ui.components.TextTitleSmallPrimary
+import com.example.behsaz.utils.JSonStatusCode.EXPIRED_TOKEN
+import com.example.behsaz.utils.JSonStatusCode.INTERNET_CONNECTION
+import com.example.behsaz.utils.JSonStatusCode.SERVER_CONNECTION
+import com.example.behsaz.utils.JSonStatusCode.SUCCESS
 import com.example.behsaz.utils.Resource
 import com.example.behsaz.utils.UIText
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
 
 @Composable
 fun AddServiceScreen(
     sharedViewModel: SharedViewModel,
     addServiceViewModel: AddServiceViewModel = hiltViewModel(),
-    categoryId: Int,
-    categoryTitle: String,
     onSelectLocation: () -> Unit,
     onShowLocation: () -> Unit,
+    onExpiredToken: () -> Unit,
     onNavUp: () -> Unit
 ) {
-//    val addServiceViewModel: AddServiceViewModel = viewModel(
-//        factory = AddServiceViewModelFactory(
-//            categoryId,
-//            categoryTitle.trim().ifEmpty { stringResource(id = R.string.select_category) }
-//        )
-//    )
     val context = LocalContext.current
     val addServiceState = addServiceViewModel.addServiceState.value
     val snackbarHostState = remember { SnackbarHostState() }
@@ -84,7 +77,88 @@ fun AddServiceScreen(
                         message = event.message.asString(context)
                     )
                 }
-                else -> {}
+            }
+        }
+    }
+    LaunchedEffect(key1 = addServiceState.responseAddService) {
+        when (addServiceState.responseAddService) {
+            is Resource.Loading -> {
+                // Display loading UI
+            }
+            is Resource.Success -> {
+                // Display success UI with data
+            }
+            is Resource.Error -> {
+                // Display error UI with message
+            }
+        }
+    }
+    LaunchedEffect(key1 = addServiceState.responseMyAddressList) {
+        when (addServiceState.responseMyAddressList) {
+            is Resource.Loading -> {
+                // Display loading UI
+                addServiceViewModel.onEvent(AddServiceEvent.UpdateLoading(true))
+            }
+            is Resource.Success -> {
+                // Display success UI with data
+                addServiceViewModel.onEvent(AddServiceEvent.UpdateLoading(false))
+                if (addServiceState.responseMyAddressList.data?.statusCode == SUCCESS) {
+                    addServiceViewModel.onEvent(AddServiceEvent.PrepareMyAddressList)
+                    if (addServiceState.myAddressListState.isNotEmpty()) {
+                        addServiceViewModel.onEvent(AddServiceEvent.UpdateMyAddressListDialog)
+                    }else{
+                        snackbarHostState.showSnackbar(message = UIText.StringResource(R.string.empty_address_dialog).asString(context))
+                    }
+                }
+            }
+            is Resource.Error -> {
+                // Display error UI with message
+                addServiceViewModel.onEvent(AddServiceEvent.UpdateLoading(false))
+                when (addServiceState.responseMyAddressList.data?.statusCode) {
+                    EXPIRED_TOKEN -> {
+                        snackbarHostState.showSnackbar(
+                            message = UIText.StringResource(R.string.expired_token).asString(context)
+                        )
+                        delay(500)  // the delay of 0.5 seconds
+                        onExpiredToken()
+                    }
+                    INTERNET_CONNECTION -> {
+                        snackbarHostState
+                            .showSnackbar(message = UIText.StringResource(R.string.not_connection_internet).asString(context))
+                    }
+                    SERVER_CONNECTION -> {
+                        snackbarHostState
+                            .showSnackbar(message = UIText.StringResource(R.string.server_connection_error).asString(context))
+                    }
+                }
+            }
+        }
+    }
+    LaunchedEffect(key1 = addServiceState.responseSubCategoryList) {
+        when (addServiceState.responseSubCategoryList) {
+            is Resource.Loading -> {
+                // Display loading UI
+                addServiceViewModel.onEvent(AddServiceEvent.UpdateLoading(true))
+            }
+            is Resource.Success -> {
+                // Display success UI with data
+                addServiceViewModel.onEvent(AddServiceEvent.UpdateLoading(false))
+                if (addServiceState.responseSubCategoryList.data?.statusCode == SUCCESS) {
+                    addServiceViewModel.onEvent(AddServiceEvent.PrepareSubCategoryList)
+                    addServiceViewModel.onEvent(AddServiceEvent.UpdateSubCategoryListDialog)
+                }
+            }
+            is Resource.Error -> {
+                // Display error UI with message
+                addServiceViewModel.onEvent(AddServiceEvent.UpdateLoading(false))
+                when (addServiceState.responseSubCategoryList.data?.statusCode) {
+                    INTERNET_CONNECTION -> {
+                        snackbarHostState.showSnackbar(message = UIText.StringResource(R.string.not_connection_internet).asString(context))
+                    }
+                    SERVER_CONNECTION -> {
+                        snackbarHostState.showSnackbar(message = UIText.StringResource(R.string.server_connection_error).asString(context))
+                    }
+                }
             }
         }
     }
@@ -104,15 +178,15 @@ fun AddServiceScreen(
             myAddresses = addServiceState.myAddressListState
         )
     }
-    if (addServiceState.categoryListDialogVisible){
-        CategoryListDialog(
+    if (addServiceState.subCategoryListDialogVisible){
+        SubCategoryListDialog(
             onDismissRequest = {
-                addServiceViewModel.onEvent(AddServiceEvent.UpdateCategoryListDialog)
+                addServiceViewModel.onEvent(AddServiceEvent.UpdateSubCategoryListDialog)
             },
-            onConfirmation = {selectedCategory ->
-                addServiceViewModel.onEvent(AddServiceEvent.SelectCategory(selectedCategory.id,selectedCategory.title))
+            onConfirmation = {selectedSubCategory ->
+                addServiceViewModel.onEvent(AddServiceEvent.SelectSubCategory(selectedSubCategory.id,selectedSubCategory.title))
             },
-            categories = addServiceState.categoryListState
+            subCategories = addServiceState.subCategoryListState
         )
     }
 
@@ -129,7 +203,7 @@ fun AddServiceScreen(
         },
         snackbarHost = {
             SnackbarHost(snackbarHostState) {
-                AppErrorSnackBar(it.visuals.message)
+                AppErrorSnackBar(it)
             }
         },
         content = {paddingValue ->
@@ -143,17 +217,22 @@ fun AddServiceScreen(
                 CardRowMediumCorner(
                     cardModifier = Modifier.padding(16.dp),
                     rowModifier = Modifier.clickable {
-//                openCategoryListDialog.value = true
-                        addServiceViewModel.onEvent(AddServiceEvent.UpdateCategoryListDialog)
+                        addServiceViewModel.onEvent(AddServiceEvent.GetSubCategoryList)
                     }
                 ) {
                     CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl)
                     {
-                        TextTitleSmall(
+                        TextLabelSmall(
                             modifier = Modifier
                                 .weight(1f)
                                 .padding(start = 8.dp),
-                            text = addServiceState.categoryTitle,
+                            text = addServiceState.subCategoryTitle.ifEmpty {
+                                stringResource(
+                                    R.string.select_category,
+                                    addServiceState.categoryTitle
+                                )
+
+                            },
                             textAlign = TextAlign.Start
                         )
                     }
@@ -170,13 +249,12 @@ fun AddServiceScreen(
                         addServiceViewModel.onEvent(AddServiceEvent.UpdateAddressTextFieldState(newValue))
                     },
                     onOpenDialog = {
-                        addServiceViewModel.onEvent(AddServiceEvent.UpdateMyAddressListDialog)
+                        addServiceViewModel.onEvent(AddServiceEvent.GetMyAddressList)
                     },
                     onSelectLocation = {
                         if (addServiceState.myAddressId == 0){
                             onSelectLocation()
                         }else{
-                            Log.i("mamali","AddServiceScreen lat : ${addServiceState.latitude}")
                             sharedViewModel.selectLocation(addServiceState.latitude,addServiceState.longitude)
                             onShowLocation()
                         }
@@ -201,47 +279,8 @@ fun AddServiceScreen(
         onNavUp()
     }
 
-    when (addServiceState.responseAddService) {
-        is Resource.Loading -> {
-            // Display loading UI
-        }
-        is Resource.Success -> {
-            // Display success UI with data
-        }
-        is Resource.Error -> {
-            // Display error UI with message
-        }
-    }
-
-    when (addServiceState.responseMyAddressList) {
-        is Resource.Loading -> {
-            // Display loading UI
-        }
-        is Resource.Success -> {
-            // Display success UI with data
-            addServiceViewModel.onEvent(AddServiceEvent.PrepareMyAddressList)
-        }
-        is Resource.Error -> {
-            // Display error UI with message
-        }
-    }
-
-    when (addServiceState.responseCategoryList) {
-        is Resource.Loading -> {
-            // Display loading UI
-        }
-        is Resource.Success -> {
-            // Display success UI with data
-            addServiceViewModel.onEvent(AddServiceEvent.PrepareCategoryList)
-        }
-        is Resource.Error -> {
-            // Display error UI with message
-        }
-    }
-
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddServiceMiddleScreen(
     address: String,
@@ -277,7 +316,11 @@ fun AddServiceMiddleScreen(
                         placeholder = {
                             TextBodyMedium(text = stringResource(id = R.string.enter_your_address))
                         },
-                        colors = TextFieldDefaults.textFieldColors(containerColor = Color.Transparent),
+                        colors = TextFieldDefaults.colors(
+                            focusedContainerColor = Color.Transparent,
+                            unfocusedContainerColor = Color.Transparent,
+                            disabledContainerColor = Color.Transparent,
+                        ),
                         maxLines = 3
                     )
                 }
