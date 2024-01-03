@@ -37,19 +37,16 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.behsaz.R
 import com.example.behsaz.data.models.myService.MyServiceListData
-import com.example.behsaz.presentation.events.HomeEvent
-import com.example.behsaz.presentation.events.MyAddressListEvent
 import com.example.behsaz.presentation.events.MyServiceListEvent
-import com.example.behsaz.presentation.events.ProfileEvent
 import com.example.behsaz.presentation.viewmodels.MyServiceListViewModel
-import com.example.behsaz.ui.components.AppErrorSnackBar
+import com.example.behsaz.ui.components.AppSnackBar
 import com.example.behsaz.ui.components.AppTopAppBar
 import com.example.behsaz.ui.components.CardColumnMediumCorner
 import com.example.behsaz.ui.components.EmptyView
 import com.example.behsaz.ui.components.ProgressBarDialog
+import com.example.behsaz.ui.components.TextLabelSmall
 import com.example.behsaz.ui.components.TextTitleMedium
 import com.example.behsaz.ui.components.TextTitleSmall
 import com.example.behsaz.utils.JSonStatusCode
@@ -61,7 +58,6 @@ import kotlinx.coroutines.delay
 @Composable
 fun MyServiceListScreen(
     myServiceListViewModel: MyServiceListViewModel = hiltViewModel(),
-//    onServiceItemClick: () -> Unit,
     onExpiredToken: () -> Unit,
     onNavUp: () -> Unit
 ) {
@@ -153,7 +149,7 @@ fun MyServiceListScreen(
         },
         snackbarHost = {
             SnackbarHost(snackbarHostState) {
-                AppErrorSnackBar(it)
+                AppSnackBar(it)
             }
         }
         ) {paddingValue ->
@@ -209,14 +205,9 @@ fun MyServiceListScreen(
 @Composable
 fun MyServiceListItem(
     item: MyServiceListData,
-//    onServiceItemClick: () -> Unit,
     ) {
-    CardColumnMediumCorner(
-//        columnModifier = Modifier.clickable {
-//            onServiceItemClick()
-//        }
-    ) {
-        TextTitleMedium(text = item.serviceGroup)
+    CardColumnMediumCorner{
+        TextTitleSmall(text = "${item.serviceGroup} - ${item.serviceType}")
         Divider(
             color = MaterialTheme.colorScheme.secondary,
             thickness = 1.dp,
@@ -225,41 +216,45 @@ fun MyServiceListItem(
         Row(
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            var iconsList = listOf(
-                R.mipmap.ic_status_blue,
-                R.mipmap.ic_calendar_blue,
-                R.mipmap.ic_barcode_blue
-            )
-            var titleList = listOf(item.status, item.dateTime, item.code)
-            repeat(iconsList.size) {
-                MyServiceListItemBottom(
+            Row(
+                modifier = Modifier.weight(0.3f),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.End
+            ) {
+                TextLabelSmall(text = item.status, modifier = Modifier.padding(horizontal = 4.dp))
+                Image(
                     modifier = Modifier
-                        .weight(0.33f),
-                    iconsList[it],
-                    titleList[it]
+                        .size(24.dp),
+                    painter = painterResource(id = R.mipmap.ic_status_blue),
+                    contentDescription = null
+                )
+            }
+            Row(
+                modifier = Modifier.weight(0.4f),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.End
+            ) {
+                TextLabelSmall(text = item.dateTime, modifier = Modifier.padding(horizontal = 4.dp))
+                Image(
+                    modifier = Modifier
+                        .size(24.dp),
+                    painter = painterResource(id = R.mipmap.ic_calendar_blue),
+                    contentDescription = null
+                )
+            }
+            Row(
+                modifier = Modifier.weight(0.3f),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.End
+            ) {
+                TextLabelSmall(text = item.code, modifier = Modifier.padding(horizontal = 4.dp))
+                Image(
+                    modifier = Modifier
+                        .size(24.dp),
+                    painter = painterResource(id = R.mipmap.ic_barcode_blue),
+                    contentDescription = null
                 )
             }
         }
-    }
-}
-
-@Composable
-fun MyServiceListItemBottom(
-    modifier: Modifier = Modifier,
-    iconId: Int,
-    title: String
-) {
-    Row(
-        modifier = modifier,
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.End
-    ) {
-        TextTitleSmall(text = title, modifier = Modifier.padding(horizontal = 4.dp))
-        Image(
-            modifier = Modifier
-                .size(24.dp),
-            painter = painterResource(id = iconId),
-            contentDescription = null
-        )
     }
 }

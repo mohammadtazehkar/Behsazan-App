@@ -1,6 +1,5 @@
 package com.example.behsaz.ui.screens
 
-import android.util.Log
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -35,14 +34,12 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.behsaz.R
-import com.example.behsaz.data.models.myAddress.MyAddressListData
 import com.example.behsaz.presentation.events.AddAddressEvent
 import com.example.behsaz.presentation.events.SignInUIEvent
 import com.example.behsaz.presentation.viewmodels.AddAddressViewModel
 import com.example.behsaz.presentation.viewmodels.SharedViewModel
-import com.example.behsaz.ui.components.AppErrorSnackBar
+import com.example.behsaz.ui.components.AppSnackBar
 import com.example.behsaz.ui.components.AppTopAppBar
 import com.example.behsaz.ui.components.CardColumnMediumCorner
 import com.example.behsaz.ui.components.CardRowMediumCorner
@@ -50,37 +47,35 @@ import com.example.behsaz.ui.components.SecondaryButton
 import com.example.behsaz.ui.components.TextBodyMedium
 import com.example.behsaz.ui.components.TextTitleSmall
 import com.example.behsaz.utils.Constants
+import com.example.behsaz.utils.Constants.FOR_ADD
 import com.example.behsaz.utils.Constants.FOR_ADD_LOCATION
 import com.example.behsaz.utils.Constants.FOR_EDIT_LOCATION
+import com.example.behsaz.utils.JSonStatusCode
 import com.example.behsaz.utils.Resource
-import dagger.hilt.android.internal.lifecycle.HiltViewModelFactory
+import com.example.behsaz.utils.UIText
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
 
 @Composable
 fun AddAddressScreen(
-    item: MyAddressListData,
     sharedViewModel: SharedViewModel,
-//    addAddressViewModel: AddAddressViewModel = viewModel(factory = AddAddressViewModelFactory(item,sharedViewModel)),
     addAddressViewModel: AddAddressViewModel = hiltViewModel(),
-//    addAddressViewModel: AddAddressViewModel = viewModel(
-//        factory = HiltViewModelFactory(LocalContext.current, AddAddressViewModelFactory::class.java)
-//    ),
     onSelectLocation: (String) -> Unit,
+    onSuccess: () -> Unit,
+    onExpiredToken: () -> Unit,
     onNavUp: () -> Unit
 ) {
-//    val myViewModelFactoryFactory = LocalContext.current.ambientViewModelFactoryFactory()
-//    val myViewModelFactory = myViewModelFactoryFactory.create(item)
-//    val addAddressViewModel: AddAddressViewModel = viewModel(factory = myViewModelFactory)
     val context = LocalContext.current
     val addAddressState = addAddressViewModel.addAddressState.value
     val sharedState = sharedViewModel.sharedState.value
-    val snackbarHostState = remember { SnackbarHostState() }
+    val errorSnackBarHostState = remember { SnackbarHostState() }
+    val successSnackBarHostState = remember { SnackbarHostState() }
 
     LaunchedEffect(key1 = true) {
         addAddressViewModel.uiEventFlow.collectLatest { event ->
             when (event) {
                 is SignInUIEvent.ShowMessage -> {
-                    snackbarHostState.showSnackbar(
+                    errorSnackBarHostState.showSnackbar(
                         message = event.message.asString(context)
                     )
                 }
@@ -91,12 +86,42 @@ fun AddAddressScreen(
         when (addAddressState.response) {
             is Resource.Loading -> {
                 // Display loading UI
+                addAddressViewModel.onEvent(AddAddressEvent.UpdateLoading(true))
             }
             is Resource.Success -> {
                 // Display success UI with data
+                addAddressViewModel.onEvent(AddAddressEvent.UpdateLoading(false))
+                if (addAddressState.response.data?.statusCode == JSonStatusCode.SUCCESS) {
+                    if (addAddressState.forWhat == FOR_ADD) {
+                        successSnackBarHostState.showSnackbar(message = UIText.StringResource(R.string.success_add_address).asString(context))
+                    }else{
+                        successSnackBarHostState.showSnackbar(message = UIText.StringResource(R.string.success_edit_address).asString(context))
+                    }
+                    delay(500)  // the delay of 0.5 seconds
+                    sharedViewModel.selectLocation(0.00,0.00)
+                    onSuccess()
+                }
             }
             is Resource.Error -> {
                 // Display error UI with message
+                addAddressViewModel.onEvent(AddAddressEvent.UpdateLoading(false))
+                when (addAddressState.response.data?.statusCode) {
+                    JSonStatusCode.EXPIRED_TOKEN -> {
+                        errorSnackBarHostState.showSnackbar(
+                            message = UIText.StringResource(R.string.expired_token).asString(context)
+                        )
+                        delay(500)  // the delay of 0.5 seconds
+                        onExpiredToken()
+                    }
+                    JSonStatusCode.INTERNET_CONNECTION -> {
+                        errorSnackBarHostState
+                            .showSnackbar(message = UIText.StringResource(R.string.not_connection_internet).asString(context))
+                    }
+                    JSonStatusCode.SERVER_CONNECTION -> {
+                        errorSnackBarHostState
+                            .showSnackbar(message = UIText.StringResource(R.string.server_connection_error).asString(context))
+                    }
+                }
             }
         }
     }
@@ -113,8 +138,11 @@ fun AddAddressScreen(
             )
         },
         snackbarHost = {
-            SnackbarHost(snackbarHostState) {
-                AppErrorSnackBar(it)
+            SnackbarHost(errorSnackBarHostState) {
+                AppSnackBar(it)
+            }
+            SnackbarHost(successSnackBarHostState) {
+                AppSnackBar(it,false)
             }
         },
         content = {paddingValue ->

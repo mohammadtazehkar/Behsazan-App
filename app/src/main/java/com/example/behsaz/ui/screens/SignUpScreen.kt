@@ -1,12 +1,9 @@
 package com.example.behsaz.ui.screens
 
-import android.util.Log
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.SnackbarResult
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
@@ -25,11 +22,10 @@ import com.example.behsaz.presentation.constants.SignUpInputTypes.PASSWORD
 import com.example.behsaz.presentation.constants.SignUpInputTypes.PHONE_NUMBER
 import com.example.behsaz.presentation.constants.SignUpInputTypes.REAGENT_TOKEN
 import com.example.behsaz.presentation.constants.SignUpInputTypes.USERNAME
-import com.example.behsaz.presentation.events.ProfileEvent
 import com.example.behsaz.presentation.events.SignInUIEvent
 import com.example.behsaz.presentation.events.SignUpEvent
 import com.example.behsaz.presentation.viewmodels.SignUpViewModel
-import com.example.behsaz.ui.components.AppErrorSnackBar
+import com.example.behsaz.ui.components.AppSnackBar
 import com.example.behsaz.ui.components.AppTopAppBar
 import com.example.behsaz.ui.components.ProgressBarDialog
 import com.example.behsaz.ui.components.UserInfoContent
@@ -37,7 +33,6 @@ import com.example.behsaz.ui.models.TextInputData
 import com.example.behsaz.utils.JSonStatusCode
 import com.example.behsaz.utils.Resource
 import com.example.behsaz.utils.UIText
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
 
 @Composable
@@ -97,7 +92,7 @@ fun SignUpScreen(
     Scaffold(
         snackbarHost = {
             SnackbarHost(snackbarHostState) {
-                AppErrorSnackBar(it)
+                AppSnackBar(it)
             }
         },
         topBar = {

@@ -1,6 +1,5 @@
 package com.example.behsaz.ui.screens
 
-import android.util.Log
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.slideInVertically
@@ -19,7 +18,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FabPosition
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.IconButton
@@ -47,21 +45,18 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.behsaz.R
 import com.example.behsaz.data.models.myAddress.MyAddressListData
-import com.example.behsaz.presentation.events.MessageListEvent
 import com.example.behsaz.presentation.events.MyAddressListEvent
-import com.example.behsaz.presentation.events.MyServiceListEvent
-import com.example.behsaz.presentation.events.ProfileEvent
 import com.example.behsaz.presentation.viewmodels.MyAddressListViewModel
 import com.example.behsaz.presentation.viewmodels.SharedViewModel
-import com.example.behsaz.ui.components.AppErrorSnackBar
+import com.example.behsaz.ui.components.AppSnackBar
 import com.example.behsaz.ui.components.AppTopAppBar
 import com.example.behsaz.ui.components.CardColumnMediumCorner
 import com.example.behsaz.ui.components.EmptyView
 import com.example.behsaz.ui.components.ProgressBarDialog
 import com.example.behsaz.ui.components.TextTitleSmall
+import com.example.behsaz.utils.ClickHelper
 import com.example.behsaz.utils.JSonStatusCode
 import com.example.behsaz.utils.Resource
 import com.example.behsaz.utils.UIText
@@ -177,7 +172,7 @@ fun MyAddressListScreen(
             ) {
                 FloatingActionButton(
                     shape = CircleShape,
-                    onClick = onAddAddressClick,
+                    onClick ={ ClickHelper.getInstance().clickOnce { onAddAddressClick()}},
                     containerColor = MaterialTheme.colorScheme.primary,
                 )
                 {
@@ -188,7 +183,7 @@ fun MyAddressListScreen(
         floatingActionButtonPosition = FabPosition.End,
         snackbarHost = {
             SnackbarHost(snackbarHostState) {
-                AppErrorSnackBar(it)
+                AppSnackBar(it)
             }
         },
         topBar = {
@@ -275,9 +270,16 @@ fun MyAddressListItem(
             verticalAlignment = Alignment.CenterVertically
         ) {
             IconButton(
-                onClick = {
+                onClick = { ClickHelper.getInstance().clickOnce {
                     val values = item.mapPoint.split(',')
-                    onEditAddressClick(item.id, item.title, item.address, values[0].toDouble(), values[1].toDouble())
+                    onEditAddressClick(
+                        item.id,
+                        item.title,
+                        item.address,
+                        values[0].toDouble(),
+                        values[1].toDouble()
+                    )
+                }
                 }
             ){
                 Image(
@@ -287,7 +289,7 @@ fun MyAddressListItem(
                 )
             }
             IconButton(
-                onClick = onShowLocation
+                onClick = { ClickHelper.getInstance().clickOnce {onShowLocation()}}
             ){
                 Image(
                     modifier = Modifier.size(32.dp),

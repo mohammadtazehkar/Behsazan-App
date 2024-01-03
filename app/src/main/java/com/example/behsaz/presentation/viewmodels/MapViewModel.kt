@@ -105,8 +105,6 @@ class MapViewModel(private var context: Context, forWhat : String ) : ViewModel(
                     markerColor = event.color
                 )
             }
-
-            else -> {}
         }
     }
 

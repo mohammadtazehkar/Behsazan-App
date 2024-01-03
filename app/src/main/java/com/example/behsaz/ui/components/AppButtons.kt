@@ -12,6 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.example.behsaz.utils.ClickHelper
 
 @Composable
 fun SecondaryButton(
@@ -22,7 +23,7 @@ fun SecondaryButton(
         modifier = Modifier
             .fillMaxWidth()
             .padding(16.dp),
-        onClick = onClick,
+        onClick = { ClickHelper.getInstance().clickOnce { onClick() }},
         colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary),
         shape = MaterialTheme.shapes.small
     ) {
@@ -42,7 +43,7 @@ fun SecondaryButton(
 ){
     Button(
         modifier = modifier.padding(16.dp),
-        onClick = onClick,
+        onClick = { ClickHelper.getInstance().clickOnce { onClick() }},
         colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary),
         shape = MaterialTheme.shapes.small
     ) {
@@ -61,7 +62,7 @@ fun PrimaryButtonExtraSmallCorner(
     onClick: () -> Unit
 ){
     Button(
-        onClick = onClick,
+        onClick = { ClickHelper.getInstance().clickOnce { onClick() }},
         modifier = modifier,
         shape = MaterialTheme.shapes.extraSmall
     ) {
@@ -80,7 +81,7 @@ fun PrimaryOutlinedButtonExtraSmallCorner(
     onClick: () -> Unit
 ){
     OutlinedButton(
-        onClick = onClick,
+        onClick = { ClickHelper.getInstance().clickOnce { onClick() }},
         modifier = modifier,
         border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary),
         shape = MaterialTheme.shapes.extraSmall,

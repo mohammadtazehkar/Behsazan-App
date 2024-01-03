@@ -21,12 +21,10 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.behsaz.R
-import com.example.behsaz.presentation.events.ProfileEvent
 import com.example.behsaz.presentation.events.RulesEvent
 import com.example.behsaz.presentation.viewmodels.RulesViewModel
-import com.example.behsaz.ui.components.AppErrorSnackBar
+import com.example.behsaz.ui.components.AppSnackBar
 import com.example.behsaz.ui.components.AppTopAppBar
 import com.example.behsaz.utils.JSonStatusCode
 import com.example.behsaz.utils.Resource
@@ -107,7 +105,7 @@ fun RulesScreen(
         },
         snackbarHost = {
             SnackbarHost(snackbarHostState) {
-                AppErrorSnackBar(it)
+                AppSnackBar(it)
             }
         }
         ) {paddingValues ->

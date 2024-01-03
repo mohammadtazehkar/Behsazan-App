@@ -13,6 +13,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.example.behsaz.R
+import com.example.behsaz.utils.ClickHelper
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -32,7 +33,7 @@ fun AppTopAppBar(
             },
             navigationIcon = {
                 if (isBackVisible) {
-                    IconButton(onClick = onBack) {
+                    IconButton(onClick ={ ClickHelper.getInstance().clickOnce { onBack() }}) {
                         Image(
                             painter = painterResource(id = R.mipmap.ic_back_blue),
                             contentDescription = null,
@@ -41,7 +42,7 @@ fun AppTopAppBar(
                     }
                 }
                 if (isMenuVisible) {
-                    IconButton(onClick = onOpenDrawer) {
+                    IconButton(onClick = { ClickHelper.getInstance().clickOnce { onOpenDrawer() }}) {
                         Image(
                             painter = painterResource(id = R.mipmap.ic_menu_blue),
                             contentDescription = null
@@ -52,7 +53,7 @@ fun AppTopAppBar(
             actions = {
                 if (isEditVisible) {
                     IconButton(
-                        onClick = onEditClick,
+                        onClick = { ClickHelper.getInstance().clickOnce { onEditClick() }},
                         modifier = Modifier.padding(4.dp),
                     ) {
                         Image(

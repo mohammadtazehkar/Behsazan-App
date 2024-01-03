@@ -16,10 +16,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
+import com.example.behsaz.utils.ClickHelper
 
 @Composable
-fun AppErrorSnackBar(
+fun AppSnackBar(
     snackBarData: SnackbarData,
+    isError: Boolean = true,
     containerColor: Color = MaterialTheme.colorScheme.background,
 ) {
     Snackbar(containerColor = containerColor) {
@@ -30,11 +32,18 @@ fun AppErrorSnackBar(
                     .padding(horizontal = 16.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                TextLabelSmallError(text = snackBarData.visuals.message)
+                if (isError) {
+                    TextLabelSmallError(text = snackBarData.visuals.message)
+                }else{
+                    TextLabelSmallPrimary(text = snackBarData.visuals.message)
+                }
                 Spacer(Modifier.weight(1f))
 
                 snackBarData.visuals.actionLabel?.let { actionLabel ->
-                    TextButton(onClick = {snackBarData.performAction()}) {
+                    TextButton(
+                        onClick = {
+                            ClickHelper.getInstance().clickOnce { snackBarData.performAction() }
+                        }) {
                         TextLabelSmallPrimary(text = actionLabel)
                     }
                 }

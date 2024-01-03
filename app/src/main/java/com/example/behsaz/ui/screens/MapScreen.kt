@@ -44,9 +44,10 @@ import com.example.behsaz.presentation.events.MapUIEvent
 import com.example.behsaz.presentation.viewmodels.MapViewModel
 import com.example.behsaz.presentation.viewmodels.MapViewModelFactory
 import com.example.behsaz.presentation.viewmodels.SharedViewModel
-import com.example.behsaz.ui.components.AppErrorSnackBar
+import com.example.behsaz.ui.components.AppSnackBar
 import com.example.behsaz.ui.components.AppTopAppBar
 import com.example.behsaz.ui.components.SecondaryButton
+import com.example.behsaz.utils.ClickHelper
 import com.example.behsaz.utils.Constants.FOR_VIEW_LOCATION
 import com.example.behsaz.utils.UIText
 import kotlinx.coroutines.CoroutineScope
@@ -181,7 +182,7 @@ fun MapScreen(
                 FloatingActionButton(
                     modifier = Modifier.size(56.dp),
                     shape = CircleShape,
-                    onClick = {
+                    onClick = { ClickHelper.getInstance().clickOnce {
                         if (!mapState.isLocationPermissionGranted) {
                             locationPermissionLauncher.launch(mapState.permissionList)
                         } else if (!mapState.isMobileGPSLocationEnable) {
@@ -197,6 +198,7 @@ fun MapScreen(
                             )
                             map.setZoom(18f, .5f)
                         }
+                    }
                     },
                     containerColor = MaterialTheme.colorScheme.primary,
                 )
@@ -212,7 +214,7 @@ fun MapScreen(
         floatingActionButtonPosition = FabPosition.End,
         snackbarHost = {
             SnackbarHost(snackbarHostState) {
-                AppErrorSnackBar(it)
+                AppSnackBar(it)
             }
         },
     ) { innerPadding ->

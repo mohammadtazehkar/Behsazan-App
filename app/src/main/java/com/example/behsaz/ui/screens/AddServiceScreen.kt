@@ -1,6 +1,5 @@
 package com.example.behsaz.ui.screens
 
-import android.util.Log
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -35,11 +34,12 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.behsaz.R
+import com.example.behsaz.presentation.events.AddAddressEvent
 import com.example.behsaz.presentation.events.AddServiceEvent
 import com.example.behsaz.presentation.events.SignInUIEvent
 import com.example.behsaz.presentation.viewmodels.AddServiceViewModel
 import com.example.behsaz.presentation.viewmodels.SharedViewModel
-import com.example.behsaz.ui.components.AppErrorSnackBar
+import com.example.behsaz.ui.components.AppSnackBar
 import com.example.behsaz.ui.components.AppTopAppBar
 import com.example.behsaz.ui.components.CardMediumCorner
 import com.example.behsaz.ui.components.CardRowMediumCorner
@@ -47,6 +47,8 @@ import com.example.behsaz.ui.components.SecondaryButton
 import com.example.behsaz.ui.components.TextBodyMedium
 import com.example.behsaz.ui.components.TextLabelSmall
 import com.example.behsaz.ui.components.TextTitleSmallPrimary
+import com.example.behsaz.utils.Constants
+import com.example.behsaz.utils.JSonStatusCode
 import com.example.behsaz.utils.JSonStatusCode.EXPIRED_TOKEN
 import com.example.behsaz.utils.JSonStatusCode.INTERNET_CONNECTION
 import com.example.behsaz.utils.JSonStatusCode.SERVER_CONNECTION
@@ -67,13 +69,14 @@ fun AddServiceScreen(
 ) {
     val context = LocalContext.current
     val addServiceState = addServiceViewModel.addServiceState.value
-    val snackbarHostState = remember { SnackbarHostState() }
+    val errorSnackBarHostState = remember { SnackbarHostState() }
+    val successSnackBarHostState = remember { SnackbarHostState() }
 
     LaunchedEffect(key1 = true) {
         addServiceViewModel.uiEventFlow.collectLatest { event ->
             when (event) {
                 is SignInUIEvent.ShowMessage -> {
-                    snackbarHostState.showSnackbar(
+                    errorSnackBarHostState.showSnackbar(
                         message = event.message.asString(context)
                     )
                 }
@@ -84,12 +87,37 @@ fun AddServiceScreen(
         when (addServiceState.responseAddService) {
             is Resource.Loading -> {
                 // Display loading UI
+                addServiceViewModel.onEvent(AddServiceEvent.UpdateLoading(true))
             }
             is Resource.Success -> {
                 // Display success UI with data
+                addServiceViewModel.onEvent(AddServiceEvent.UpdateLoading(false))
+                if (addServiceState.responseAddService.data?.statusCode == SUCCESS) {
+                    successSnackBarHostState.showSnackbar(message = UIText.StringResource(R.string.success_add_service).asString(context))
+                    sharedViewModel.selectLocation(0.00,0.00)
+                    addServiceViewModel.onEvent(AddServiceEvent.SuccessfullyAddService)
+                }
             }
             is Resource.Error -> {
                 // Display error UI with message
+                addServiceViewModel.onEvent(AddServiceEvent.UpdateLoading(false))
+                when (addServiceState.responseMyAddressList.data?.statusCode) {
+                    EXPIRED_TOKEN -> {
+                        errorSnackBarHostState.showSnackbar(
+                            message = UIText.StringResource(R.string.expired_token).asString(context)
+                        )
+                        delay(500)  // the delay of 0.5 seconds
+                        onExpiredToken()
+                    }
+                    INTERNET_CONNECTION -> {
+                        errorSnackBarHostState
+                            .showSnackbar(message = UIText.StringResource(R.string.not_connection_internet).asString(context))
+                    }
+                    SERVER_CONNECTION -> {
+                        errorSnackBarHostState
+                            .showSnackbar(message = UIText.StringResource(R.string.server_connection_error).asString(context))
+                    }
+                }
             }
         }
     }
@@ -104,10 +132,10 @@ fun AddServiceScreen(
                 addServiceViewModel.onEvent(AddServiceEvent.UpdateLoading(false))
                 if (addServiceState.responseMyAddressList.data?.statusCode == SUCCESS) {
                     addServiceViewModel.onEvent(AddServiceEvent.PrepareMyAddressList)
-                    if (addServiceState.myAddressListState.isNotEmpty()) {
-                        addServiceViewModel.onEvent(AddServiceEvent.UpdateMyAddressListDialog)
+                    if (addServiceState.responseMyAddressList.data?.data!!.isNotEmpty()) {
+                        addServiceViewModel.onEvent(AddServiceEvent.UpdateMyAddressListDialog(true))
                     }else{
-                        snackbarHostState.showSnackbar(message = UIText.StringResource(R.string.empty_address_dialog).asString(context))
+                        errorSnackBarHostState.showSnackbar(message = UIText.StringResource(R.string.empty_address_dialog).asString(context))
                     }
                 }
             }
@@ -116,18 +144,18 @@ fun AddServiceScreen(
                 addServiceViewModel.onEvent(AddServiceEvent.UpdateLoading(false))
                 when (addServiceState.responseMyAddressList.data?.statusCode) {
                     EXPIRED_TOKEN -> {
-                        snackbarHostState.showSnackbar(
+                        errorSnackBarHostState.showSnackbar(
                             message = UIText.StringResource(R.string.expired_token).asString(context)
                         )
                         delay(500)  // the delay of 0.5 seconds
                         onExpiredToken()
                     }
                     INTERNET_CONNECTION -> {
-                        snackbarHostState
+                        errorSnackBarHostState
                             .showSnackbar(message = UIText.StringResource(R.string.not_connection_internet).asString(context))
                     }
                     SERVER_CONNECTION -> {
-                        snackbarHostState
+                        errorSnackBarHostState
                             .showSnackbar(message = UIText.StringResource(R.string.server_connection_error).asString(context))
                     }
                 }
@@ -145,7 +173,7 @@ fun AddServiceScreen(
                 addServiceViewModel.onEvent(AddServiceEvent.UpdateLoading(false))
                 if (addServiceState.responseSubCategoryList.data?.statusCode == SUCCESS) {
                     addServiceViewModel.onEvent(AddServiceEvent.PrepareSubCategoryList)
-                    addServiceViewModel.onEvent(AddServiceEvent.UpdateSubCategoryListDialog)
+                    addServiceViewModel.onEvent(AddServiceEvent.UpdateSubCategoryListDialog(true))
                 }
             }
             is Resource.Error -> {
@@ -153,10 +181,10 @@ fun AddServiceScreen(
                 addServiceViewModel.onEvent(AddServiceEvent.UpdateLoading(false))
                 when (addServiceState.responseSubCategoryList.data?.statusCode) {
                     INTERNET_CONNECTION -> {
-                        snackbarHostState.showSnackbar(message = UIText.StringResource(R.string.not_connection_internet).asString(context))
+                        errorSnackBarHostState.showSnackbar(message = UIText.StringResource(R.string.not_connection_internet).asString(context))
                     }
                     SERVER_CONNECTION -> {
-                        snackbarHostState.showSnackbar(message = UIText.StringResource(R.string.server_connection_error).asString(context))
+                        errorSnackBarHostState.showSnackbar(message = UIText.StringResource(R.string.server_connection_error).asString(context))
                     }
                 }
             }
@@ -166,7 +194,7 @@ fun AddServiceScreen(
     if (addServiceState.myAddressListDialogVisible){
         MyAddressListDialog(
             onDismissRequest = {
-                addServiceViewModel.onEvent(AddServiceEvent.UpdateMyAddressListDialog)
+                addServiceViewModel.onEvent(AddServiceEvent.UpdateMyAddressListDialog(false))
             },
             onConfirmation = {selectedAddress ->
                 sharedViewModel.selectLocation(selectedAddress.mapPoint.split(',')[0].toDouble(),selectedAddress.mapPoint.split(',')[1].toDouble())
@@ -174,6 +202,7 @@ fun AddServiceScreen(
                     selectedAddress.address,
                     selectedAddress.mapPoint.split(',')[0].toDouble(),
                     selectedAddress.mapPoint.split(',')[1].toDouble()))
+                addServiceViewModel.onEvent(AddServiceEvent.UpdateMyAddressListDialog(false))
             },
             myAddresses = addServiceState.myAddressListState
         )
@@ -181,10 +210,11 @@ fun AddServiceScreen(
     if (addServiceState.subCategoryListDialogVisible){
         SubCategoryListDialog(
             onDismissRequest = {
-                addServiceViewModel.onEvent(AddServiceEvent.UpdateSubCategoryListDialog)
+                addServiceViewModel.onEvent(AddServiceEvent.UpdateSubCategoryListDialog(false))
             },
             onConfirmation = {selectedSubCategory ->
                 addServiceViewModel.onEvent(AddServiceEvent.SelectSubCategory(selectedSubCategory.id,selectedSubCategory.title))
+                addServiceViewModel.onEvent(AddServiceEvent.UpdateSubCategoryListDialog(false))
             },
             subCategories = addServiceState.subCategoryListState
         )
@@ -202,8 +232,11 @@ fun AddServiceScreen(
             )
         },
         snackbarHost = {
-            SnackbarHost(snackbarHostState) {
-                AppErrorSnackBar(it)
+            SnackbarHost(errorSnackBarHostState) {
+                AppSnackBar(it)
+            }
+            SnackbarHost(successSnackBarHostState) {
+                AppSnackBar(it,false)
             }
         },
         content = {paddingValue ->

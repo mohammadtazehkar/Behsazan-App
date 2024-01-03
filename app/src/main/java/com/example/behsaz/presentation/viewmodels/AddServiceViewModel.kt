@@ -57,10 +57,10 @@ class AddServiceViewModel @Inject constructor(
     fun onEvent(event: AddServiceEvent) {
         when (event) {
             is AddServiceEvent.SelectSubCategory -> {
-                _addServiceState.value = _addServiceState.value.copy(
+                _addServiceState.value = addServiceState.value.copy(
                     subCategoryId = event.subCategoryId,
                     subCategoryTitle = event.subCategoryTitle,
-                    subCategoryListDialogVisible = false
+//                    subCategoryListDialogVisible = false
                 )
             }
             is AddServiceEvent.UpdateAddressTextFieldState -> {
@@ -69,12 +69,12 @@ class AddServiceViewModel @Inject constructor(
                 )
             }
             is AddServiceEvent.SelectMyAddress -> {
-                _addServiceState.value = _addServiceState.value.copy(
+                _addServiceState.value = addServiceState.value.copy(
                     address = event.address,
                     myAddressId = event.myAddressId,
                     latitude = event.latitude,
                     longitude = event.longitude,
-                    myAddressListDialogVisible = false
+//                    myAddressListDialogVisible = false
                 )
             }
             is AddServiceEvent.UpdateDescriptionTextFieldState -> {
@@ -83,14 +83,24 @@ class AddServiceViewModel @Inject constructor(
                 )
             }
             is AddServiceEvent.UpdateMyAddressListDialog -> {
-                _addServiceState.value = _addServiceState.value.copy(
-                    myAddressListDialogVisible = !addServiceState.value.myAddressListDialogVisible
+                _addServiceState.value = addServiceState.value.copy(
+                    myAddressListDialogVisible = event.status
                 )
+                if (!event.status){
+                    _addServiceState.value = addServiceState.value.copy(
+                        responseMyAddressList = Resource.Loading()
+                    )
+                }
             }
             is AddServiceEvent.UpdateSubCategoryListDialog -> {
-                _addServiceState.value = _addServiceState.value.copy(
-                    subCategoryListDialogVisible = !addServiceState.value.subCategoryListDialogVisible
+                _addServiceState.value = addServiceState.value.copy(
+                    subCategoryListDialogVisible = event.status
                 )
+                if (!event.status){
+                    _addServiceState.value = addServiceState.value.copy(
+                        responseSubCategoryList = Resource.Loading()
+                    )
+                }
             }
             is AddServiceEvent.AddServiceClicked -> {
                 _addServiceState.value = addServiceState.value.copy(
@@ -118,6 +128,22 @@ class AddServiceViewModel @Inject constructor(
             is AddServiceEvent.UpdateLoading -> {
                 _addServiceState.value = addServiceState.value.copy(
                     isLoading = event.status
+                )
+            }
+            is AddServiceEvent.SuccessfullyAddService -> {
+                _addServiceState.value = addServiceState.value.copy(
+                    address = "",
+                    latitude = 0.00,
+                    longitude = 0.00,
+                    myAddressId = 0,
+                    description = "",
+                    myAddressListState = mutableListOf(),
+                    subCategoryListState = mutableListOf(),
+                    myAddressListDialogVisible = false,
+                    subCategoryListDialogVisible = false,
+                    responseAddService = Resource.Loading(),
+                    responseMyAddressList = Resource.Loading(),
+                    responseSubCategoryList = Resource.Loading()
                 )
             }
         }
@@ -179,20 +205,10 @@ class AddServiceViewModel @Inject constructor(
                         "${addServiceState.value.latitude},${addServiceState.value.longitude}",
                         addServiceState.value.address,
                         addServiceState.value.myAddressId.toString(),
-                        addServiceState.value.categoryId.toString(),
+                        addServiceState.value.subCategoryId.toString(),
                         addServiceState.value.description
                     )
                 )
-                if (_addServiceState.value.responseAddService.data?.statusCode == JSonStatusCode.SUCCESS){
-                    _uiEventFlow.emit(
-                        SignInUIEvent.ShowMessage(
-                            message = UIText.StringResource(
-                                resId = R.string.success_add_service,
-                                _addServiceState.value.address
-                            )
-                        )
-                    )
-                }
             }
         }
     }

@@ -26,6 +26,7 @@ import com.example.behsaz.R
 import com.example.behsaz.ui.components.CardMediumCorner
 import com.example.behsaz.ui.components.TextTitleSmall
 import com.example.behsaz.ui.components.TextTitleSmallPrimary
+import com.example.behsaz.utils.ClickHelper
 
 @Composable
 fun LogoutDialog(
@@ -67,7 +68,7 @@ fun LogoutDialog(
                     Column(
                         modifier = Modifier
                             .weight(0.5f)
-                            .clickable { onDismissRequest() },
+                            .clickable { ClickHelper.getInstance().clickOnce { onDismissRequest() } },
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         TextTitleSmallPrimary(
@@ -81,7 +82,7 @@ fun LogoutDialog(
                     Column(
                         modifier = Modifier
                             .weight(0.5f)
-                            .clickable { onConfirmation() },
+                            .clickable { ClickHelper.getInstance().clickOnce { onConfirmation() }} ,
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         TextTitleSmallPrimary(

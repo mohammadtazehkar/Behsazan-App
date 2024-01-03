@@ -2,7 +2,6 @@ package com.example.behsaz.ui.screens
 
 import android.util.Log
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
@@ -17,15 +16,12 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.behsaz.R
 import com.example.behsaz.presentation.constants.SignUpInputTypes
 import com.example.behsaz.presentation.events.ProfileEvent
-import com.example.behsaz.presentation.events.SignInEvent
 import com.example.behsaz.presentation.events.SignInUIEvent
-import com.example.behsaz.presentation.events.SignUpEvent
 import com.example.behsaz.presentation.viewmodels.ProfileViewModel
-import com.example.behsaz.ui.components.AppErrorSnackBar
+import com.example.behsaz.ui.components.AppSnackBar
 import com.example.behsaz.ui.components.AppTopAppBar
 import com.example.behsaz.ui.components.ProgressBarDialog
 import com.example.behsaz.ui.components.UserInfoContent
@@ -183,7 +179,7 @@ fun ProfileScreen(
         },
         snackbarHost = {
             SnackbarHost(snackbarHostState) {
-                AppErrorSnackBar(it)
+                AppSnackBar(it)
             }
         },
         content = { paddingValues ->

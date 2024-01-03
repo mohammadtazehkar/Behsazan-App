@@ -13,10 +13,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
-import com.example.behsaz.data.models.home.CategoryListData
 import com.example.behsaz.data.models.myService.SubCategoryListData
 import com.example.behsaz.ui.components.CardMediumCorner
 import com.example.behsaz.ui.components.TextTitleMedium
+import com.example.behsaz.utils.ClickHelper
 
 @Composable
 fun SubCategoryListDialog(
@@ -51,9 +51,9 @@ fun CategoryListDialogItem(
     onItemClick: (SubCategoryListData) -> Unit
 ){
     Column(
-        modifier = Modifier.clickable {
+        modifier = Modifier.clickable { ClickHelper.getInstance().clickOnce {
             onItemClick(item)
-        }
+        }}
     ) {
         TextTitleMedium(
             text = item.title,

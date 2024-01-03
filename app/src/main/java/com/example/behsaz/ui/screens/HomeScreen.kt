@@ -38,16 +38,16 @@ import coil.compose.AsyncImage
 import com.example.behsaz.R
 import com.example.behsaz.data.models.home.CategoryListData
 import com.example.behsaz.presentation.events.HomeEvent
-import com.example.behsaz.presentation.events.ProfileEvent
 import com.example.behsaz.presentation.viewmodels.HomeViewModel
 import com.example.behsaz.ui.components.AppBannerPager
 import com.example.behsaz.ui.components.AppDrawer
-import com.example.behsaz.ui.components.AppErrorSnackBar
+import com.example.behsaz.ui.components.AppSnackBar
 import com.example.behsaz.ui.components.AppTopAppBar
 import com.example.behsaz.ui.components.CardColumnMediumCorner
 import com.example.behsaz.ui.components.EmptyView
 import com.example.behsaz.ui.components.ProgressBarDialog
 import com.example.behsaz.ui.components.TextTitleMedium
+import com.example.behsaz.utils.ClickHelper
 import com.example.behsaz.utils.Destinations
 import com.example.behsaz.utils.JSonStatusCode
 import com.example.behsaz.utils.Resource
@@ -144,9 +144,11 @@ fun HomeScreen(
                 homeViewModel.onEvent(HomeEvent.UpdateLogoutDialog)
             },
             onConfirmation = {
-                homeViewModel.onEvent(HomeEvent.DoLogout(
-                    onLogoutComplete = onLogoutCompleted
-                ))
+                homeViewModel.onEvent(
+                    HomeEvent.DoLogout(
+                        onLogoutComplete = onLogoutCompleted
+                    )
+                )
                 homeViewModel.onEvent(HomeEvent.UpdateLogoutDialog)
             }
         )
@@ -190,7 +192,7 @@ fun HomeScreen(
             },
             snackbarHost = {
                 SnackbarHost(snackbarHostState) {
-                    AppErrorSnackBar(it)
+                    AppSnackBar(it)
                 }
             },
         ) { paddingValues ->
@@ -279,7 +281,9 @@ fun HomeServiceGroupGridItem(
     CardColumnMediumCorner(
         columnModifier = Modifier
             .fillMaxWidth()
-            .clickable { onServiceItemClick(item) },
+            .clickable {
+                ClickHelper.getInstance().clickOnce { onServiceItemClick(item) }
+            },
         columnHorizontalAlignment = Alignment.CenterHorizontally
     ) {
         AsyncImage(

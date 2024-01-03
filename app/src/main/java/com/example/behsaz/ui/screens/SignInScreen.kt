@@ -1,7 +1,6 @@
 package com.example.behsaz.ui.screens
 
 import android.graphics.Rect
-import android.util.Log
 import android.view.ViewTreeObserver
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
@@ -19,13 +18,10 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.SnackbarResult
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -39,13 +35,10 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.behsaz.R
 import com.example.behsaz.presentation.constants.AppKeyboard
 import com.example.behsaz.presentation.constants.SignInInputTypes.PASSWORD
 import com.example.behsaz.presentation.constants.SignInInputTypes.USERNAME
-import com.example.behsaz.presentation.events.ProfileEvent
-import com.example.behsaz.ui.components.AppErrorSnackBar
 import com.example.behsaz.ui.components.AppTopAppBar
 import com.example.behsaz.ui.components.TextInputItem
 import com.example.behsaz.ui.components.CardBoxMediumCorner
@@ -54,12 +47,12 @@ import com.example.behsaz.ui.components.PrimaryOutlinedButtonExtraSmallCorner
 import com.example.behsaz.presentation.events.SignInEvent
 import com.example.behsaz.presentation.events.SignInUIEvent
 import com.example.behsaz.presentation.viewmodels.SignInViewModel
+import com.example.behsaz.ui.components.AppSnackBar
 import com.example.behsaz.ui.components.ProgressBarDialog
 import com.example.behsaz.ui.models.TextInputData
 import com.example.behsaz.utils.JSonStatusCode
 import com.example.behsaz.utils.Resource
 import com.example.behsaz.utils.UIText
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
 
 
@@ -123,7 +116,7 @@ fun SignInScreen(
     Scaffold(
         snackbarHost = {
             SnackbarHost(snackbarHostState) {
-                AppErrorSnackBar(it)
+                AppSnackBar(it)
             }
         },
         topBar = {

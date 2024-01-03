@@ -9,7 +9,6 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import com.example.behsaz.data.models.myAddress.MyAddressListData
 import com.example.behsaz.presentation.viewmodels.SharedViewModel
 import com.example.behsaz.ui.screens.*
 import com.example.behsaz.utils.ArgumentKeys.ADDRESS
@@ -90,12 +89,6 @@ fun BehsazNavHost(
                         }
                     }
                 }
-                //                onNavigateToSignUp = {
-//                    navController.navigate(SURVEY_ROUTE)
-//                },
-//                onNavigateToMain = {
-//                    navController.navigate(SURVEY_ROUTE)
-//                },
             )
         }
         composable(
@@ -293,9 +286,6 @@ fun BehsazNavHost(
             }
         ) {
             MyServiceListScreen (
-//                onServiceItemClick = {
-//                    navController.navigate("$ADD_SERVICE_SCREEN/0/ ")
-//                },
                 onExpiredToken = {
                     navController.navigate(SPLASH_SCREEN){
                         popUpTo(MY_SERVICES_SCREEN) {
@@ -501,26 +491,35 @@ fun BehsazNavHost(
                 )
             }
         ) {
-
-            val addressId = it.arguments?.getInt(ADDRESS_ID)!!
-            val addressTitle = it.arguments?.getString(ADDRESS_TITLE)!!
-            val address = it.arguments?.getString(ADDRESS)!!
-            val latitude = it.arguments?.getString(LATITUDE)!!
-            val longitude = it.arguments?.getString(LONGITUDE)!!
-
             AddAddressScreen (
                 sharedViewModel = sharedViewModel,
                 onNavUp = navController::navigateUp,
                 onSelectLocation = {forWhat ->
                     navController.navigate("$MAP_SCREEN/$forWhat")
                 },
-                item =
-                    if (addressId != 0){
-                        MyAddressListData(addressId,addressTitle,address,"$latitude,$longitude")
+                onExpiredToken = {
+                    navController.navigate(SPLASH_SCREEN){
+                        popUpTo(ADD_ADDRESS_SCREEN) {
+                            inclusive = true
+                        }
+                        popUpTo(MY_ADDRESSES_SCREEN) {
+                            inclusive = true
+                        }
+                        popUpTo(HOME_SCREEN) {
+                            inclusive = true
+                        }
                     }
-                    else{
-                        MyAddressListData(0,"","","0.00,0.00")
+                },
+                onSuccess = {
+                    navController.navigate(MY_ADDRESSES_SCREEN){
+                        popUpTo(ADD_ADDRESS_SCREEN) {
+                            inclusive = true
+                        }
+                        popUpTo(MY_ADDRESSES_SCREEN) {
+                            inclusive = true
+                        }
                     }
+                },
             )
         }
         composable(
@@ -608,16 +607,7 @@ fun BehsazNavHost(
                 )
             }
         ) {
-//            MapScreen()
-//            MapRoute()
-//            val categoryId = it.arguments?.getInt(CATEGORY_ID)
             val forWhat = it.arguments?.getString(FOR_WHAT)!!
-//            val addressId = it.arguments?.getInt(ADDRESS_ID)
-//            val addressTitle = it.arguments?.getString(ADDRESS_TITLE)
-//            val address = it.arguments?.getString(ADDRESS)
-//            val latitude = it.arguments?.getDouble(LATITUDE)
-//            val longitude = it.arguments?.getDouble(LONGITUDE)
-//            val description = it.arguments?.getString(DESCRIPTION)
             MapScreen(
                 sharedViewModel = sharedViewModel,
                 forWhat = forWhat,

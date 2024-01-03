@@ -1,18 +1,14 @@
 package com.example.behsaz.presentation.viewmodels
 
-import android.content.Context
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.example.behsaz.R
 import com.example.behsaz.data.models.myAddress.MyAddressListData
 import com.example.behsaz.domain.usecase.AddMyAddressUseCase
 import com.example.behsaz.domain.usecase.UpdateMyAddressUseCase
-import com.example.behsaz.domain.usecase.UpdateProfileDataUseCase
-import com.example.behsaz.presentation.constants.SignUpInputTypes
 import com.example.behsaz.utils.UIText
 import com.example.behsaz.presentation.events.AddAddressEvent
 import com.example.behsaz.presentation.events.SignInUIEvent
@@ -20,15 +16,11 @@ import com.example.behsaz.presentation.states.AddAddressState
 import com.example.behsaz.utils.ArgumentKeys
 import com.example.behsaz.utils.Constants.FOR_ADD
 import com.example.behsaz.utils.Constants.FOR_EDIT
-import com.example.behsaz.utils.JSonStatusCode
 import com.example.behsaz.utils.Resource
-import dagger.assisted.Assisted
-import dagger.assisted.AssistedInject
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
-import java.lang.IllegalArgumentException
 import javax.inject.Inject
 
 @HiltViewModel
@@ -51,11 +43,8 @@ class AddAddressViewModel @Inject constructor(
         }
     private val _addAddressState = mutableStateOf(
         AddAddressState(
-//            id = item.id,
             id = myAddressItem.id,
-//            title = item.title,
             title = myAddressItem.title,
-//            address = item.address,
             address = myAddressItem.address,
             latitude = if (myAddressItem.id == 0) {
                 0.00
@@ -106,6 +95,11 @@ class AddAddressViewModel @Inject constructor(
             }
             is AddAddressEvent.AddAddressClicked -> {
                 addAddress()
+            }
+            is AddAddressEvent.UpdateLoading -> {
+                _addAddressState.value = addAddressState.value.copy(
+                    isLoading = event.status
+                )
             }
         }
     }
@@ -169,67 +163,7 @@ class AddAddressViewModel @Inject constructor(
                         )
                     )
                 }
-                if (_addAddressState.value.response.data?.statusCode == JSonStatusCode.SUCCESS){
-                    _uiEventFlow.emit(
-                        SignInUIEvent.ShowMessage(
-                            message = UIText.StringResource(
-                                resId = R.string.success_add_address,
-                                _addAddressState.value.title
-                            )
-                        )
-                    )
-                }
             }
         }
     }
 }
-
-//class AddAddressViewModelFactory(
-//    private val addMyAddressUseCase: AddMyAddressUseCase,
-//    private val updateMyAddressUseCase: UpdateMyAddressUseCase,
-//    private val state: SavedStateHandle,
-////    private val item : MyAddressListData,
-//) : ViewModelProvider.Factory {
-//
-//    override fun <T : ViewModel> create(modelClass: Class<T>): T {
-//        if (modelClass.isAssignableFrom(AddAddressViewModel::class.java)){
-////            return AddAddressViewModel(addMyAddressUseCase, updateMyAddressUseCase, item) as T
-//            return AddAddressViewModel(addMyAddressUseCase, updateMyAddressUseCase,state) as T
-//        }
-//        throw IllegalArgumentException("Unknown View Model Class")
-//    }
-//}
-
-//class AddAddressViewModelFactory @AssistedInject constructor(
-//    private val addMyAddressUseCase: AddMyAddressUseCase,
-//    private val updateMyAddressUseCase: UpdateMyAddressUseCase,
-//    @Assisted private val item: MyAddressListData,
-////    @Assisted private val sharedViewModel: SharedViewModel
-//) : ViewModelProvider.Factory {
-//
-//    @AssistedInject.Factory
-//    interface Factory {
-//        fun create(item: MyAddressListData): AddAddressViewModel
-//    }
-//
-//    override fun <T : ViewModel> create(modelClass: Class<T>): T {
-//        if (modelClass.isAssignableFrom(AddAddressViewModel::class.java)) {
-//            return AddAddressViewModel(addMyAddressUseCase, updateMyAddressUseCase, item) as T
-//        }
-//        throw IllegalArgumentException("Unknown ViewModel class")
-//    }
-//}
-
-//class AddAddressViewModelFactory(
-//    private val addMyAddressUseCase: AddMyAddressUseCase,
-//    private val updateMyAddressUseCase: UpdateMyAddressUseCase
-//) : ViewModelProvider.Factory {
-//
-//    fun create(item: MyAddressListData, sharedViewModel: SharedViewModel): AddAddressViewModel {
-//        return AddAddressViewModel(addMyAddressUseCase, updateMyAddressUseCase, item, sharedViewModel)
-//    }
-//
-//    override fun <T : ViewModel> create(modelClass: Class<T>): T {
-//        throw UnsupportedOperationException("Use create(item, sharedViewModel) instead")
-//    }
-//}

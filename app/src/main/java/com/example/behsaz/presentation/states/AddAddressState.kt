@@ -11,5 +11,6 @@ data class AddAddressState(
     var longitude: Double,
     var forWhat: String,
     var actionTitleId: Int,
+    var isLoading: Boolean = false,
     var response: Resource<APIAddAddressResponse>
 )

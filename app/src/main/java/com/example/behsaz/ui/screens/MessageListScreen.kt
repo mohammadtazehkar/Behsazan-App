@@ -35,15 +35,11 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.behsaz.R
 import com.example.behsaz.data.models.message.MessageListData
 import com.example.behsaz.presentation.events.MessageListEvent
-import com.example.behsaz.presentation.events.ProfileEvent
-import com.example.behsaz.presentation.events.SignInEvent
-import com.example.behsaz.presentation.events.SignInUIEvent
 import com.example.behsaz.presentation.viewmodels.MessageListViewModel
-import com.example.behsaz.ui.components.AppErrorSnackBar
+import com.example.behsaz.ui.components.AppSnackBar
 import com.example.behsaz.ui.components.AppTopAppBar
 import com.example.behsaz.ui.components.CardColumnMediumCorner
 import com.example.behsaz.ui.components.EmptyView
@@ -52,8 +48,6 @@ import com.example.behsaz.ui.components.TextTitleSmall
 import com.example.behsaz.utils.JSonStatusCode
 import com.example.behsaz.utils.Resource
 import com.example.behsaz.utils.UIText
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.collectLatest
 
 @Composable
 fun MessageListScreen(
@@ -131,7 +125,7 @@ fun MessageListScreen(
     Scaffold (
         snackbarHost = {
             SnackbarHost(snackbarHostState) {
-                AppErrorSnackBar(it)
+                AppSnackBar(it)
             }
         },
         topBar = {

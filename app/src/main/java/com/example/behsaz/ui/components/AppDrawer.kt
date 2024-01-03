@@ -30,6 +30,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.times
 import com.example.behsaz.R
 import com.example.behsaz.ui.models.DrawerItemData
+import com.example.behsaz.utils.ClickHelper
 import com.example.behsaz.utils.Destinations.ABOUT_US_SCREEN
 import com.example.behsaz.utils.Destinations.LOG_OUT_SCREEN
 import com.example.behsaz.utils.Destinations.MESSAGES_SCREEN
@@ -87,7 +88,7 @@ private val bottomItems = listOf(
 
 @Composable
 fun AppDrawer(
-    fullName : String,
+    fullName: String,
     modifier: Modifier = Modifier,
     onDrawerItemClick: (String) -> Unit
 ) {
@@ -106,13 +107,13 @@ fun AppDrawer(
             )
             Spacer(modifier = Modifier.height(24.dp))
             DrawerSection(
-                items =  middleItems,
-                onDrawerItemClick =  onDrawerItemClick
+                items = middleItems,
+                onDrawerItemClick = onDrawerItemClick
             )
             Spacer(modifier = Modifier.height(24.dp))
             DrawerSection(
                 items = bottomItems,
-                onDrawerItemClick =  onDrawerItemClick
+                onDrawerItemClick = onDrawerItemClick
             )
             Spacer(modifier = Modifier.height(48.dp))
             DrawerFooter()
@@ -158,13 +159,17 @@ fun DrawerSectionItem(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .clickable { onDrawerItemClick(route) },
+                .clickable {
+                    ClickHelper
+                        .getInstance()
+                        .clickOnce { onDrawerItemClick(route) }
+                },
             horizontalArrangement = Arrangement.End,
             verticalAlignment = CenterVertically
         ) {
             if (isFirst) {
                 TextTitleMedium(text = fullName)
-            }else {
+            } else {
                 TextTitleMedium(text = stringResource(id = titleId))
             }
             Image(
@@ -185,14 +190,14 @@ fun DrawerSectionItem(
 }
 
 @Composable
-fun DrawerFooter(){
+fun DrawerFooter() {
     val configuration = LocalConfiguration.current
     val logoSize = 0.3 * configuration.screenWidthDp.dp
 
-    Row (
+    Row(
         modifier = Modifier.fillMaxWidth(),
         verticalAlignment = CenterVertically
-    ){
+    ) {
         Image(
             modifier = Modifier
                 .size(logoSize)
