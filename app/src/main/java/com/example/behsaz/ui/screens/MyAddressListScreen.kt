@@ -7,6 +7,7 @@ import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -17,7 +18,13 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.pullrefresh.PullRefreshIndicator
+import androidx.compose.material.pullrefresh.pullRefresh
+import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.material3.FabPosition
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.IconButton
@@ -47,6 +54,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.behsaz.R
 import com.example.behsaz.data.models.myAddress.MyAddressListData
+import com.example.behsaz.presentation.events.MessageListEvent
 import com.example.behsaz.presentation.events.MyAddressListEvent
 import com.example.behsaz.presentation.viewmodels.MyAddressListViewModel
 import com.example.behsaz.presentation.viewmodels.SharedViewModel
@@ -62,6 +70,7 @@ import com.example.behsaz.utils.Resource
 import com.example.behsaz.utils.UIText
 import kotlinx.coroutines.delay
 
+@OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun MyAddressListScreen(
     myAddressListViewModel: MyAddressListViewModel = hiltViewModel(),
@@ -69,7 +78,7 @@ fun MyAddressListScreen(
     onAddAddressClick: () -> Unit,
     onEditAddressClick: (Int, String, String, Double, Double) -> Unit,
     onShowLocation: () -> Unit,
-    onExpiredToken: ()-> Unit,
+    onExpiredToken: () -> Unit,
     onNavUp: () -> Unit
 ) {
     val context = LocalContext.current
@@ -100,6 +109,10 @@ fun MyAddressListScreen(
             }
         )
     }
+    val pullRefreshState = rememberPullRefreshState(
+        refreshing = myAddressListState.isLoading,
+        onRefresh = { myAddressListViewModel.onEvent(MyAddressListEvent.GetListFromServer) }
+    )
 
     LaunchedEffect(key1 = myAddressListState.response) {
         when (myAddressListState.response) {
@@ -107,6 +120,7 @@ fun MyAddressListScreen(
                 // Display loading UI
                 myAddressListViewModel.onEvent(MyAddressListEvent.UpdateLoading(true))
             }
+
             is Resource.Success -> {
                 // Display success UI with data
                 myAddressListViewModel.onEvent(MyAddressListEvent.UpdateLoading(false))
@@ -115,44 +129,54 @@ fun MyAddressListScreen(
                 }
 
             }
+
             is Resource.Error -> {
                 // Display error UI with message
                 myAddressListViewModel.onEvent(MyAddressListEvent.UpdateLoading(false))
                 when (myAddressListState.response.data?.statusCode) {
                     JSonStatusCode.EXPIRED_TOKEN -> {
                         snackbarHostState.showSnackbar(
-                            message = UIText.StringResource(R.string.expired_token).asString(context)
+                            message = UIText.StringResource(R.string.expired_token)
+                                .asString(context)
                         )
                         delay(500)  // the delay of 0.5 seconds
                         onExpiredToken()
                     }
+
                     JSonStatusCode.INTERNET_CONNECTION -> {
                         val result = snackbarHostState
                             .showSnackbar(
-                                message = UIText.StringResource(R.string.not_connection_internet).asString(context),
-                                actionLabel = UIText.StringResource(R.string.trye_again).asString(context),
+                                message = UIText.StringResource(R.string.not_connection_internet)
+                                    .asString(context),
+                                actionLabel = UIText.StringResource(R.string.trye_again)
+                                    .asString(context),
                                 duration = SnackbarDuration.Indefinite
                             )
                         when (result) {
                             SnackbarResult.ActionPerformed -> {
                                 myAddressListViewModel.onEvent(MyAddressListEvent.GetListFromServer)
                             }
+
                             SnackbarResult.Dismissed -> {
                                 /* Handle snackbar dismissed */
                             }
                         }
                     }
+
                     JSonStatusCode.SERVER_CONNECTION -> {
                         val result = snackbarHostState
                             .showSnackbar(
-                                message = UIText.StringResource(R.string.server_connection_error).asString(context),
-                                actionLabel = UIText.StringResource(R.string.trye_again).asString(context),
+                                message = UIText.StringResource(R.string.server_connection_error)
+                                    .asString(context),
+                                actionLabel = UIText.StringResource(R.string.trye_again)
+                                    .asString(context),
                                 duration = SnackbarDuration.Indefinite
                             )
                         when (result) {
                             SnackbarResult.ActionPerformed -> {
                                 myAddressListViewModel.onEvent(MyAddressListEvent.GetListFromServer)
                             }
+
                             SnackbarResult.Dismissed -> {
                                 /* Handle snackbar dismissed */
                             }
@@ -172,7 +196,7 @@ fun MyAddressListScreen(
             ) {
                 FloatingActionButton(
                     shape = CircleShape,
-                    onClick ={ ClickHelper.getInstance().clickOnce { onAddAddressClick()}},
+                    onClick = { ClickHelper.getInstance().clickOnce { onAddAddressClick() } },
                     containerColor = MaterialTheme.colorScheme.primary,
                 )
                 {
@@ -191,57 +215,71 @@ fun MyAddressListScreen(
                 title = stringResource(id = R.string.my_addresses),
                 isBackVisible = true,
                 onBack = {
-                    sharedViewModel.selectLocation(0.00,0.00)
+                    sharedViewModel.selectLocation(0.00, 0.00)
                     onNavUp()
                 }
             )
         }
-    ) {paddingValue ->
+    ) { paddingValue ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .background(MaterialTheme.colorScheme.background)
                 .padding(paddingValue)
         ) {
-            if (myAddressListState.listState.isNotEmpty()) {
-                LazyColumn(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .background(MaterialTheme.colorScheme.background)
-                        .nestedScroll(nestedScrollConnection),
-                    verticalArrangement = Arrangement.spacedBy(16.dp),
-                ) {
-                    item {
-                        Spacer(modifier = Modifier.height(16.dp))
+            Box(
+                modifier = Modifier
+                    .pullRefresh(pullRefreshState)
+            ) {
+                if (myAddressListState.listState.isNotEmpty()) {
+                    LazyColumn(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(MaterialTheme.colorScheme.background)
+                            .nestedScroll(nestedScrollConnection),
+                        verticalArrangement = Arrangement.spacedBy(16.dp),
+                    ) {
+                        item {
+                            Spacer(modifier = Modifier.height(16.dp))
+                        }
+                        items(myAddressListState.listState.size) { index ->
+                            MyAddressListItem(
+                                item = myAddressListState.listState[index],
+                                onEditAddressClick = { id, title, address, latitude, longitude ->
+                                    sharedViewModel.selectLocation(0.00, 0.00)
+                                    onEditAddressClick(id, title, address, latitude, longitude)
+                                },
+                                onShowLocation = {
+                                    val values =
+                                        myAddressListState.listState[index].mapPoint.split(',')
+                                    sharedViewModel.selectLocation(
+                                        values[0].toDouble(),
+                                        values[1].toDouble()
+                                    )
+                                    onShowLocation()
+                                }
+                            )
+                        }
+                        item {
+                            Spacer(modifier = Modifier.height(16.dp))
+                        }
                     }
-                    items(myAddressListState.listState.size) { index ->
-                        MyAddressListItem(
-                            item = myAddressListState.listState[index],
-                            onEditAddressClick = { id, title, address, latitude, longitude ->
-                                sharedViewModel.selectLocation(0.00, 0.00)
-                                onEditAddressClick(id, title, address, latitude, longitude)
-                            },
-                            onShowLocation = {
-                                val values = myAddressListState.listState[index].mapPoint.split(',')
-                                sharedViewModel.selectLocation(
-                                    values[0].toDouble(),
-                                    values[1].toDouble()
-                                )
-                                onShowLocation()
-                            }
-                        )
-                    }
-                    item {
-                        Spacer(modifier = Modifier.height(16.dp))
+                } else {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxHeight()
+                            .padding(16.dp)
+                            .verticalScroll(rememberScrollState()),
+                        verticalArrangement = Arrangement.Center
+                    ) {
+                        EmptyView(text = stringResource(id = R.string.empty_address_list))
                     }
                 }
-            }else{
-                Column (
-                    modifier = Modifier.fillMaxHeight().padding(16.dp),
-                    verticalArrangement = Arrangement.Center
-                ) {
-                    EmptyView(text = stringResource(id = R.string.empty_address_list))
-                }
+                PullRefreshIndicator(
+                    refreshing = myAddressListState.isLoading,
+                    state = pullRefreshState,
+                    modifier = Modifier.align(Alignment.TopCenter),
+                )
             }
         }
 
@@ -249,7 +287,7 @@ fun MyAddressListScreen(
 
     BackHandler {
         // your action
-        sharedViewModel.selectLocation(0.00,0.00)
+        sharedViewModel.selectLocation(0.00, 0.00)
         onNavUp()
     }
 }
@@ -270,18 +308,19 @@ fun MyAddressListItem(
             verticalAlignment = Alignment.CenterVertically
         ) {
             IconButton(
-                onClick = { ClickHelper.getInstance().clickOnce {
-                    val values = item.mapPoint.split(',')
-                    onEditAddressClick(
-                        item.id,
-                        item.title,
-                        item.address,
-                        values[0].toDouble(),
-                        values[1].toDouble()
-                    )
+                onClick = {
+                    ClickHelper.getInstance().clickOnce {
+                        val values = item.mapPoint.split(',')
+                        onEditAddressClick(
+                            item.id,
+                            item.title,
+                            item.address,
+                            values[0].toDouble(),
+                            values[1].toDouble()
+                        )
+                    }
                 }
-                }
-            ){
+            ) {
                 Image(
                     modifier = Modifier.size(32.dp),
                     painter = painterResource(id = R.mipmap.ic_edit_blue),
@@ -289,8 +328,8 @@ fun MyAddressListItem(
                 )
             }
             IconButton(
-                onClick = { ClickHelper.getInstance().clickOnce {onShowLocation()}}
-            ){
+                onClick = { ClickHelper.getInstance().clickOnce { onShowLocation() } }
+            ) {
                 Image(
                     modifier = Modifier.size(32.dp),
                     painter = painterResource(id = R.mipmap.ic_google_map),

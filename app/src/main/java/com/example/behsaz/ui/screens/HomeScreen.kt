@@ -4,6 +4,7 @@ import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
@@ -15,6 +16,13 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.pullrefresh.PullRefreshIndicator
+import androidx.compose.material.pullrefresh.PullRefreshState
+import androidx.compose.material.pullrefresh.pullRefresh
+import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalNavigationDrawer
@@ -38,6 +46,7 @@ import coil.compose.AsyncImage
 import com.example.behsaz.R
 import com.example.behsaz.data.models.home.CategoryListData
 import com.example.behsaz.presentation.events.HomeEvent
+import com.example.behsaz.presentation.events.MessageListEvent
 import com.example.behsaz.presentation.viewmodels.HomeViewModel
 import com.example.behsaz.ui.components.AppBannerPager
 import com.example.behsaz.ui.components.AppDrawer
@@ -56,6 +65,7 @@ import com.example.behsaz.utils.UIText
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
+@OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun HomeScreen(
     homeViewModel: HomeViewModel = hiltViewModel(),
@@ -68,7 +78,10 @@ fun HomeScreen(
     val scope = rememberCoroutineScope()
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Open)
     val snackbarHostState = remember { SnackbarHostState() }
-
+    val pullRefreshState = rememberPullRefreshState(
+        refreshing = homeState.isLoading,
+        onRefresh = { homeViewModel.onEvent(HomeEvent.GetHomeData) }
+    )
 
     LaunchedEffect(key1 = true) {
         delay(500)  // the delay of 0.5 seconds
@@ -203,13 +216,16 @@ fun HomeScreen(
                 onServiceItemClick = { item ->
 //                    onNavigateToAddService(item.id,item.title.asString(context))
                     onNavigateToAddService(item.id, item.title)
-                }
+                },
+                isLoading = homeState.isLoading,
+                pullRefreshState = pullRefreshState
             )
         }
     }
 
 }
 
+@OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun HomeContent(
     modifier: Modifier = Modifier,
@@ -217,37 +233,49 @@ fun HomeContent(
     imageList: List<String>,
     categoryList: List<CategoryListData>,
     onServiceItemClick: (CategoryListData) -> Unit,
+    isLoading: Boolean,
+    pullRefreshState: PullRefreshState
 ) {
-
-    Column(
-        modifier = modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
+    Box(
+        modifier = Modifier
+            .pullRefresh(pullRefreshState)
     ) {
-        Spacer(modifier = Modifier.height(16.dp))
-        AppBannerPager(
-            modifier = Modifier.weight(0.3f),
-            images = imageList
-        )
         Column(
-            modifier = Modifier
-                .weight(0.7f)
-                .padding(horizontal = 16.dp)
+            modifier = modifier
+                .fillMaxSize()
+                .background(MaterialTheme.colorScheme.background)
+                .verticalScroll(rememberScrollState())
         ) {
-            if (categoryList.isNotEmpty()) {
-                HomeServiceGroupGrid(
-                    items = categoryList,
-                    onServiceItemClick = onServiceItemClick
-                )
-            } else {
-                Column(
-                    modifier = Modifier.fillMaxHeight(),
-                    verticalArrangement = Arrangement.Center
-                ) {
-                    EmptyView(text = stringResource(id = R.string.empty_category_list))
+            Spacer(modifier = Modifier.height(16.dp))
+            AppBannerPager(
+                modifier = Modifier.weight(0.3f),
+                images = imageList
+            )
+            Column(
+                modifier = Modifier
+                    .weight(0.7f)
+                    .padding(horizontal = 16.dp)
+            ) {
+                if (categoryList.isNotEmpty()) {
+                    HomeServiceGroupGrid(
+                        items = categoryList,
+                        onServiceItemClick = onServiceItemClick
+                    )
+                } else {
+                    Column(
+                        modifier = Modifier.fillMaxHeight(),
+                        verticalArrangement = Arrangement.Center
+                    ) {
+                        EmptyView(text = stringResource(id = R.string.empty_category_list))
+                    }
                 }
             }
         }
+        PullRefreshIndicator(
+            refreshing = isLoading,
+            state = pullRefreshState,
+            modifier = Modifier.align(Alignment.TopCenter),
+        )
     }
 }
 
@@ -282,7 +310,9 @@ fun HomeServiceGroupGridItem(
         columnModifier = Modifier
             .fillMaxWidth()
             .clickable {
-                ClickHelper.getInstance().clickOnce { onServiceItemClick(item) }
+                ClickHelper
+                    .getInstance()
+                    .clickOnce { onServiceItemClick(item) }
             },
         columnHorizontalAlignment = Alignment.CenterHorizontally
     ) {

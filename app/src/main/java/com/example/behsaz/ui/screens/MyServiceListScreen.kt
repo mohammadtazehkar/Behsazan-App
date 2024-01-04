@@ -15,6 +15,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.pullrefresh.PullRefreshIndicator
 import androidx.compose.material.pullrefresh.pullRefresh
@@ -160,13 +162,9 @@ fun MyServiceListScreen(
                 .padding(paddingValue)
         ) {
 
-            Box(modifier = Modifier.pullRefresh(pullRefreshState)) {
-                PullRefreshIndicator(
-                    refreshing = myServiceListState.isLoading,
-                    state = pullRefreshState,
-                    modifier = Modifier.align(Alignment.TopCenter),
-                    backgroundColor = if (myServiceListState.isLoading) Color.Red else Color.Green,
-                )
+            Box(modifier = Modifier
+                .pullRefresh(pullRefreshState)) {
+
                 if (myServiceListState.listState.isNotEmpty()) {
                     LazyColumn(
                         modifier = Modifier
@@ -191,12 +189,19 @@ fun MyServiceListScreen(
                 }
                 else {
                     Column (
-                        modifier = Modifier.fillMaxHeight().padding(16.dp),
+                        modifier = Modifier.fillMaxHeight().padding(16.dp)
+                            .verticalScroll(rememberScrollState()),
                         verticalArrangement = Arrangement.Center
                     ) {
                         EmptyView(text = stringResource(id = R.string.empty_service_list))
                     }
                 }
+                PullRefreshIndicator(
+                    refreshing = myServiceListState.isLoading,
+                    state = pullRefreshState,
+                    modifier = Modifier.align(Alignment.TopCenter),
+//                    backgroundColor = if (myServiceListState.isLoading) Color.Red else Color.Green,
+                )
             }
         }
     }
