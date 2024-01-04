@@ -84,6 +84,9 @@ class MapViewModel(private var context: Context, forWhat : String ) : ViewModel(
                 _mapState.value = mapState.value.copy(
                     isLocationPermissionGranted = event.status
                 )
+                if (event.status && mapState.value.isMobileGPSLocationEnable){
+                    initLocation()
+                }
             }
             is MapEvent.UpdateCurrentLatLong -> {
                 _mapState.value = mapState.value.copy(
