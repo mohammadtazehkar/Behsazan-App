@@ -461,7 +461,7 @@ fun BehsazNavHost(
                     type = NavType.StringType
                     defaultValue = ""
                 },
-                navArgument(LATITUDE){
+                navArgument(LONGITUDE){
                     type = NavType.StringType
                     defaultValue = ""
                 }
